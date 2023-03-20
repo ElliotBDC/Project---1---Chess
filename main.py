@@ -10,7 +10,9 @@ GREEN = (118,150,86)
 pygame.init()
  
 #Declaring the screen size
-size = (3720, 1920)
+screen_size = pygame.display.Info()
+print(screen_size)
+size = (screen_size.current_w,  screen_size.current_h)
 screen = pygame.display.set_mode(size)
 done = False
 
@@ -20,6 +22,9 @@ while not done:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             done = True
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_TAB:
+                done=True
  
     screen.fill(WHITE)
     pygame.display.flip()
