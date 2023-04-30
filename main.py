@@ -13,8 +13,8 @@ pygame.init()
 screen_size = pygame.display.Info()
 screen_width = screen_size.current_w
 screen_height = screen_size.current_h
-size = (screen_width*0.5,  screen_height*0.5)
-screen = pygame.display.set_mode(size)
+current_size = (screen_width*0.5,  screen_height*0.5)
+screen = pygame.display.set_mode(current_size)
 done = False
 
 clock = pygame.time.Clock()
@@ -45,8 +45,20 @@ BACKGROUND_COLOUR_1 = hex_to_rgb('#262626')
 fullscreen = False
 
 HOME_SCREEN = "HOME_SCREEN"
+GAME_SCREEN = "GAME_SCREEN"
 
 current_state = HOME_SCREEN
+
+text = "Chess"
+font_name = "freesansbold.ttf"
+font_size = 32
+font_color = (255, 255, 255)
+
+font = pygame.font.Font(font_name, font_size)
+text_surface = font.render(text, True, font_color)
+
+text_rect = text_surface.get_rect()
+text_rect.center = (current_size[0] // 2, current_size[1] // 10)
 
 
 
@@ -59,20 +71,30 @@ while not done:
                 done=True
             if event.key == pygame.K_ESCAPE:
                 if fullscreen:
-                    pygame.display.set_mode(size)
+                    current_size = (screen_width*0.5,  screen_height*0.5)
+                    pygame.display.set_mode(current_size)
                     fullscreen = False
+
+                    text_rect.center = (current_size[0] // 2, current_size[1] // 10)
                 else:
-                    pygame.display.set_mode((screen_width, screen_height), pygame.FULLSCREEN)
-                    
+                    current_size = ((screen_width, screen_height))
+                    pygame.display.set_mode(current_size, pygame.FULLSCREEN)
                     fullscreen = True
-    if current_state == HOME_SCREEN:
-        ...
- 
+
+                    text_rect.center = (current_size[0] // 2, current_size[1] // 10)
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    current_state = GAME_SCREEN
+
+
     screen.fill(BACKGROUND_COLOUR_1)
+    if current_state == HOME_SCREEN:
+        screen.blit(text_surface, text_rect)
+ 
+
+
+
     pygame.display.flip()
-
-
-    #Screen refreshes at 60 times per second. 60 FPS
     clock.tick(60)
 pygame.quit()
 
