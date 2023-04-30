@@ -11,8 +11,9 @@ pygame.init()
  
 #Declaring the screen size
 screen_size = pygame.display.Info()
-print(screen_size)
-size = (screen_size.current_w*0.5,  screen_size.current_h*0.6)
+screen_width = screen_size.current_w
+screen_height = screen_size.current_h
+size = (screen_width*0.5,  screen_height*0.5)
 screen = pygame.display.set_mode(size)
 done = False
 
@@ -30,12 +31,22 @@ class Board():
         "a6": "-", "b6": "-", "c6": "-", "d6": "-", "e6": "-", "f6": "-", "g6": "-", "h6": "-",
         "a7": "P", "b7": "P", "c7": "P", "d7": "P", "e7": "P", "f7": "P", "g7": "P", "h7": "P",
         "a8": "-", "b8": "-", "c8": "-", "d8": "-", "e8": "-", "f8": "-", "g8": "-", "h8": "-",
-
     }
     def __init__(self) -> None:
         pass
-    
+    #262626
 
+def hex_to_rgb(hex_color):
+    hex_color = hex_color.lstrip("#")
+    return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+
+BACKGROUND_COLOUR_1 = hex_to_rgb('#262626')
+
+fullscreen = False
+
+HOME_SCREEN = "HOME_SCREEN"
+
+current_state = HOME_SCREEN
 
 
 
@@ -46,8 +57,18 @@ while not done:
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_TAB:
                 done=True
+            if event.key == pygame.K_ESCAPE:
+                if fullscreen:
+                    pygame.display.set_mode(size)
+                    fullscreen = False
+                else:
+                    pygame.display.set_mode((screen_width, screen_height), pygame.FULLSCREEN)
+                    
+                    fullscreen = True
+    if current_state == HOME_SCREEN:
+        ...
  
-    screen.fill(WHITE)
+    screen.fill(BACKGROUND_COLOUR_1)
     pygame.display.flip()
 
 
