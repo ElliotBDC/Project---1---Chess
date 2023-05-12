@@ -32,6 +32,8 @@ class Board():
         "a7": "P", "b7": "P", "c7": "P", "d7": "P", "e7": "P", "f7": "P", "g7": "P", "h7": "P",
         "a8": "-", "b8": "-", "c8": "-", "d8": "-", "e8": "-", "f8": "-", "g8": "-", "h8": "-",
     }
+
+
     def __init__(self) -> None:
         pass
     #262626
@@ -60,7 +62,7 @@ text_surface = font.render(text, True, font_color)
 text_rect = text_surface.get_rect()
 text_rect.center = (current_size[0] // 2, current_size[1] // 10)
 
-
+        
 
 while not done:
     for event in pygame.event.get():
@@ -90,6 +92,8 @@ while not done:
     screen.fill(BACKGROUND_COLOUR_1)
     if current_state == HOME_SCREEN:
         screen.blit(text_surface, text_rect)
+    elif current_size == GAME_SCREEN:
+        ...
  
 
 
