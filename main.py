@@ -1,4 +1,5 @@
 import pygame
+import pygame_plus
 
 #Colours (pygame requires them to be in binary representation)
 BLACK = (0, 0, 0)
@@ -22,21 +23,29 @@ clock = pygame.time.Clock()
 
 
 class Board():
-    board = {
-        "a1": "R", "b1": "N", "c1": "B", "d1": "Q", "e1": "K", "f1": "B", "g1": "N", "h1": "R",
-        "a2": "P", "b2": "P", "c2": "P", "d2": "P", "e2": "P", "f2": "P", "g2": "-", "h2": "P", 
-        "a3": "-", "b3": "-", "c3": "-", "d3": "-", "e3": "-", "f3": "-", "g3": "-", "h3": "-",
-        "a4": "-", "b4": "-", "c4": "-", "d4": "-", "e4": "-", "f4": "-", "g4": "-", "h4": "-",
-        "a5": "-", "b5": "-", "c5": "-", "d5": "-", "e5": "-", "f5": "-", "g5": "-", "h5": "-",
-        "a6": "-", "b6": "-", "c6": "-", "d6": "-", "e6": "-", "f6": "-", "g6": "-", "h6": "-",
-        "a7": "P", "b7": "P", "c7": "P", "d7": "P", "e7": "P", "f7": "P", "g7": "P", "h7": "P",
-        "a8": "-", "b8": "-", "c8": "-", "d8": "-", "e8": "-", "f8": "-", "g8": "-", "h8": "-",
-    }
-
+    board = [
+    ['', '', '', '', '', '', '', ''],
+    ['', '', '', '', '', '', '', ''],
+    ['', '', '', '', '', '', '', ''],
+    ['', '', '', '', '', '', '', ''],
+    ['', '', '', '', '', '', '', ''],
+    ['', '', '', '', '', '', '', ''],
+    ['', '', '', '', '', '', '', ''],
+    ['', '', '', '', '', '', '', '']
+]
 
     def __init__(self) -> None:
         pass
     #262626
+
+    def drawBoard(self, screen):
+        max_width = screen_height*0.85
+        max_height = screen_height*0.85
+        box_dimen = (current_size[1]*0.7) // 8
+        for i in range(0, 8):
+            for j in range(0, 8):
+                pygame.draw.rect(screen, GREEN if ((i+1) % 2 == 0 and (j+1) % 2 != 0) or ((i+1) % 2 != 0 and (j+1)%2==0) else WHITE,
+                                (30+ (i*box_dimen), 30+(j*box_dimen), box_dimen, box_dimen))
 
 def hex_to_rgb(hex_color):
     hex_color = hex_color.lstrip("#")
@@ -61,9 +70,8 @@ text_surface = font.render(text, True, font_color)
 
 text_rect = text_surface.get_rect()
 text_rect.center = (current_size[0] // 2, current_size[1] // 10)
-
         
-
+board = Board()
 while not done:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -88,12 +96,13 @@ while not done:
                 if event.button == 1:
                     current_state = GAME_SCREEN
 
-
     screen.fill(BACKGROUND_COLOUR_1)
     if current_state == HOME_SCREEN:
+        
         screen.blit(text_surface, text_rect)
-    elif current_size == GAME_SCREEN:
-        ...
+    elif current_state == GAME_SCREEN:
+        board.drawBoard(screen)
+               
  
 
 
