@@ -23,6 +23,10 @@ clock = pygame.time.Clock()
 
 
 class Board():
+    board_x = None
+    board_y = None
+    board_width = None 
+    board_height = None
     board = [
     ['', '', '', '', '', '', '', ''],
     ['', '', '', '', '', '', '', ''],
@@ -32,20 +36,22 @@ class Board():
     ['', '', '', '', '', '', '', ''],
     ['', '', '', '', '', '', '', ''],
     ['', '', '', '', '', '', '', '']
-]
+    ]
 
     def __init__(self) -> None:
         pass
     #262626
 
     def drawBoard(self, screen):
-        max_width = screen_height*0.85
-        max_height = screen_height*0.85
         box_dimen = (current_size[1]*0.7) // 8
+        self.board_x = current_size[0]*0.05
+        self.board_y = 0.15*current_size[1]
+        self.board_height = current_size[1]*0.7
+        self.board_width = self.board_height
         for i in range(0, 8):
             for j in range(0, 8):
                 pygame.draw.rect(screen, GREEN if ((i+1) % 2 == 0 and (j+1) % 2 != 0) or ((i+1) % 2 != 0 and (j+1)%2==0) else WHITE,
-                                (30+ (i*box_dimen), 30+(j*box_dimen), box_dimen, box_dimen))
+                                (current_size[0]*0.05+(i*box_dimen), 0.15*current_size[1]+(j*box_dimen), box_dimen, box_dimen))
 
 def hex_to_rgb(hex_color):
     hex_color = hex_color.lstrip("#")
@@ -102,7 +108,8 @@ while not done:
         screen.blit(text_surface, text_rect)
     elif current_state == GAME_SCREEN:
         board.drawBoard(screen)
-               
+        pygame.draw.rect(screen, BLACK, (board.board_x-int(current_size[0]*0.01), int(current_size[1]*0.025), int(((current_size[1]*0.7)//8)*8+current_size[0]*0.05)), int(current_size[1]*0.1))
+        pygame.draw.rect(screen, BLACK, (board.board_x-int(current_size[0]*0.025), current_size[1]*0.875, int(((current_size[1]*0.7)//8)*8+current_size[0]*0.05)), current_size[1]*0.1)
  
 
 
