@@ -108,8 +108,8 @@ while not done:
         screen.blit(text_surface, text_rect)
     elif current_state == GAME_SCREEN:
         board.drawBoard(screen)
-        pygame.draw.rect(screen, BLACK, (board.board_x-int(current_size[0]*0.01), int(current_size[1]*0.025), int(((current_size[1]*0.7)//8)*8+current_size[0]*0.05)), int(current_size[1]*0.1))
-        pygame.draw.rect(screen, BLACK, (board.board_x-int(current_size[0]*0.025), current_size[1]*0.875, int(((current_size[1]*0.7)//8)*8+current_size[0]*0.05)), current_size[1]*0.1)
+        pygame.draw.rect(screen, BLACK, (board.board_x-current_size[0]*0.025, current_size[1]*0.025, (current_size[1]*0.7//8)*8+current_size[0]*0.05, current_size[1]*0.1))
+        pygame.draw.rect(screen, BLACK, (board.board_x-current_size[0]*0.025, current_size[1]*0.875, (current_size[1]*0.7)//8*8+current_size[0]*0.05, current_size[1]*0.1))
  
 
 
