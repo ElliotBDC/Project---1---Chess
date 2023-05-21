@@ -19,7 +19,48 @@ screen = pygame.display.set_mode(current_size)
 done = False
 
 clock = pygame.time.Clock()
- 
+wp = pygame.image.load("images/wp.png")
+wr = pygame.image.load("images/wr.png")
+wb = pygame.image.load("images/wb.png")
+wn = pygame.image.load("images/wn.png")
+wq = pygame.image.load("images/wq.png")
+wk = pygame.image.load("images/wk.png")
+bp = pygame.image.load("images/bp.png")
+bq = pygame.image.load("images/bq.png")
+br = pygame.image.load("images/br.png")
+bn = pygame.image.load("images/bn.png")
+bb = pygame.image.load("images/bb.png")
+bk = pygame.image.load("images/bk.png")
+
+images = [
+    ['wp', wp],
+    ['wr', wr],
+    ['wb', wb],
+    ['wn', wn],
+    ['wq', wq],
+    ['wk', wk],
+    ['bp', bp],
+    ['bq', bq],
+    ['br', br],
+    ['bn', bn],
+    ['bb', bb],
+    ['bk', bk]
+]
+
+"""
+wp = ['wp', pygame.image.load("images/wp.png")]
+wr = ['wr', pygame.image.load("images/wr.png")]
+wb = ['wb', pygame.image.load("images/wb.png")]
+wn = ['wn', pygame.image.load("images/wn.png")]
+wq = ['wq', pygame.image.load("images/wq.png")]
+wk = ['wk', pygame.image.load("images/wk.png")]
+bp = ['bp', pygame.image.load("images/bp.png")]
+bq = ['bq', pygame.image.load("images/bq.png")]
+br = ['br', pygame.image.load("images/br.png")]
+bn = ['bn', pygame.image.load("images/bn.png")]
+bb = ['bb', pygame.image.load("images/bb.png")]
+bk = ['bk', pygame.image.load("images/bk.png")]
+"""
 
 
 class Board():
@@ -28,14 +69,14 @@ class Board():
     board_width = None 
     board_height = None
     board = [
+    ['br', 'bn', 'bb', 'bq', 'bk', 'bb', 'bn', 'br'],
+    ['bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'bp'],
     ['', '', '', '', '', '', '', ''],
     ['', '', '', '', '', '', '', ''],
     ['', '', '', '', '', '', '', ''],
     ['', '', '', '', '', '', '', ''],
-    ['', '', '', '', '', '', '', ''],
-    ['', '', '', '', '', '', '', ''],
-    ['', '', '', '', '', '', '', ''],
-    ['', '', '', '', '', '', '', '']
+    ['wp', 'wp', 'wp', 'wp', 'wp', 'wp', 'wp', 'wp'],
+    ['wr', 'wn', 'wb', 'wq', 'wk', 'wb', 'wn', 'wr']
     ]
 
     def __init__(self) -> None:
@@ -52,6 +93,16 @@ class Board():
             for j in range(0, 8):
                 pygame.draw.rect(screen, GREEN if ((i+1) % 2 == 0 and (j+1) % 2 != 0) or ((i+1) % 2 != 0 and (j+1)%2==0) else WHITE,
                                 (current_size[0]*0.05+(i*box_dimen), 0.15*current_size[1]+(j*box_dimen), box_dimen, box_dimen))
+        for y in range(0, 8):
+            for x in range(0, 8):
+                for piece in images:
+                    if piece[0] == self.board[y][x]:
+                        new_piece = pygame.transform.scale(piece[1], ((current_size[1]*0.7)/8.3, (current_size[1]*0.7)/8.3))
+                        piece_rect = new_piece.get_rect()
+                        piece_rect.center = (current_size[0]*0.05+(x*box_dimen)+(0.5*box_dimen), 0.15*current_size[1]+(y*box_dimen)+(0.5*box_dimen))
+                        screen.blit(new_piece, piece_rect)
+
+
 
 def hex_to_rgb(hex_color):
     hex_color = hex_color.lstrip("#")
@@ -86,6 +137,8 @@ while not done:
             if event.key == pygame.K_TAB:
                 done=True
             if event.key == pygame.K_ESCAPE:
+                ### The following code is used to make sure the size of features on the page are changed according to the current
+                ### size of the program
                 if fullscreen:
                     current_size = (screen_width*0.5,  screen_height*0.5)
                     pygame.display.set_mode(current_size)
@@ -98,6 +151,8 @@ while not done:
                     fullscreen = True
 
                     text_rect.center = (current_size[0] // 2, current_size[1] // 10)
+                ###
+                ###
         elif event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
                     current_state = GAME_SCREEN
@@ -108,13 +163,13 @@ while not done:
         screen.blit(text_surface, text_rect)
     elif current_state == GAME_SCREEN:
         board.drawBoard(screen)
+        ### DRAW THE BOARD
         pygame.draw.rect(screen, BLACK, (board.board_x-current_size[0]*0.025, current_size[1]*0.025, (current_size[1]*0.7//8)*8+current_size[0]*0.05, current_size[1]*0.1))
-        pygame.draw.rect(screen, BLACK, (board.board_x-current_size[0]*0.025, current_size[1]*0.875, (current_size[1]*0.7)//8*8+current_size[0]*0.05, current_size[1]*0.1))
- 
-
+        pygame.draw.rect(screen, BLACK, (board.board_x-current_size[0]*0.025, current_size[1]*0.87, (current_size[1]*0.7)//8*8+current_size[0]*0.05, current_size[1]*0.1))
+        
 
 
     pygame.display.flip()
-    clock.tick(60)
+    clock.tick(30)
 pygame.quit()
 
