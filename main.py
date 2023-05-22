@@ -64,10 +64,11 @@ bk = ['bk', pygame.image.load("images/bk.png")]
 
 
 class Board():
-    board_x = None
-    board_y = None
-    board_width = None 
-    board_height = None
+    board_x = current_size[0]*0.05
+    board_y = 0.15*current_size[1]
+    board_height = current_size[1]*0.7
+    board_width = board_height
+    box_dimen = (current_size[1]*0.7) // 8
     board = [
     ['br', 'bn', 'bb', 'bq', 'bk', 'bb', 'bn', 'br'],
     ['bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'bp'],
@@ -79,12 +80,13 @@ class Board():
     ['wr', 'wn', 'wb', 'wq', 'wk', 'wb', 'wn', 'wr']
     ]
 
+   
     def __init__(self) -> None:
         pass
     #262626
 
     def drawBoard(self, screen):
-        box_dimen = (current_size[1]*0.7) // 8
+        self.box_dimen = (current_size[1]*0.7) // 8
         self.board_x = current_size[0]*0.05
         self.board_y = 0.15*current_size[1]
         self.board_height = current_size[1]*0.7
@@ -92,14 +94,14 @@ class Board():
         for i in range(0, 8):
             for j in range(0, 8):
                 pygame.draw.rect(screen, GREEN if ((i+1) % 2 == 0 and (j+1) % 2 != 0) or ((i+1) % 2 != 0 and (j+1)%2==0) else WHITE,
-                                (current_size[0]*0.05+(i*box_dimen), 0.15*current_size[1]+(j*box_dimen), box_dimen, box_dimen))
+                                (current_size[0]*0.05+(i*self.box_dimen), 0.15*current_size[1]+(j*self.box_dimen), self.box_dimen, self.box_dimen))
         for y in range(0, 8):
             for x in range(0, 8):
                 for piece in images:
                     if piece[0] == self.board[y][x]:
                         new_piece = pygame.transform.scale(piece[1], ((current_size[1]*0.7)/8.3, (current_size[1]*0.7)/8.3))
                         piece_rect = new_piece.get_rect()
-                        piece_rect.center = (current_size[0]*0.05+(x*box_dimen)+(0.5*box_dimen), 0.15*current_size[1]+(y*box_dimen)+(0.5*box_dimen))
+                        piece_rect.center = (current_size[0]*0.05+(x*self.box_dimen)+(0.5*self.box_dimen), 0.15*current_size[1]+(y*self.box_dimen)+(0.5*self.box_dimen))
                         screen.blit(new_piece, piece_rect)
 
 
@@ -127,7 +129,10 @@ text_surface = font.render(text, True, font_color)
 
 text_rect = text_surface.get_rect()
 text_rect.center = (current_size[0] // 2, current_size[1] // 10)
-        
+
+hold_click = False
+piece_lock = False
+
 board = Board()
 while not done:
     for event in pygame.event.get():
@@ -156,6 +161,13 @@ while not done:
         elif event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
                     current_state = GAME_SCREEN
+                mouse_pos = pygame.mouse.get_pos()
+                if board.board_x+board.board_width > mouse_pos[0] > board.board_x and board.board_y < mouse_pos[1] < board.board_y+board.board_height:
+                    hold_click = True
+        elif event.type == pygame.MOUSEBUTTONUP:
+            if hold_click == True:
+                hold_click = False
+                piece_lock = False
 
     screen.fill(BACKGROUND_COLOUR_1)
     if current_state == HOME_SCREEN:
@@ -166,9 +178,35 @@ while not done:
         ### DRAW THE BOARD
         pygame.draw.rect(screen, BLACK, (board.board_x-current_size[0]*0.025, current_size[1]*0.025, (current_size[1]*0.7//8)*8+current_size[0]*0.05, current_size[1]*0.1))
         pygame.draw.rect(screen, BLACK, (board.board_x-current_size[0]*0.025, current_size[1]*0.87, (current_size[1]*0.7)//8*8+current_size[0]*0.05, current_size[1]*0.1))
-        
+        if hold_click == True:
+            mouse_pos = pygame.mouse.get_pos()
+            row_clicked = int((mouse_pos[0]-board.board_x) // board.box_dimen)
+            column_clicked = int((mouse_pos[1]-board.board_y) // board.box_dimen)
+            if (board.board_x+board.board_width > mouse_pos[0] > board.board_x and board.board_y < mouse_pos[1] < board.board_y+board.board_height) == False and hold_click == True:
+                    hold_click = False
+                    piece_lock = False
+                    continue
+            print(row_clicked, column_clicked)
+            if piece_lock == True:
+                type_piece = pygame.transform.scale(type_piece, ((current_size[1]*0.7)/7.0, (current_size[1]*0.7)/7.0))
+                piece_rect = type_piece.get_rect()
+                piece_rect.center = (mouse_pos[0], mouse_pos[1])
+                screen.blit(type_piece, piece_rect)
+            else:
+                try:
+                    if board.board[column_clicked][row_clicked] != "":
+                        for piece in images:
+                            if piece[0] == board.board[column_clicked][row_clicked]:
+                                new_piece = pygame.transform.scale(piece[1], ((current_size[1]*0.7)/7.0, (current_size[1]*0.7)/7.0))
+                                piece_rect = new_piece.get_rect()
+                                piece_rect.center = (mouse_pos[0], mouse_pos[1])
+                                screen.blit(new_piece, piece_rect)
+                                piece_lock = True
+                                type_piece = piece[1]
+                except Exception as e:
+                    ...
 
-
+            print(row_clicked, column_clicked)
     pygame.display.flip()
     clock.tick(30)
 pygame.quit()
