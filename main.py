@@ -111,18 +111,15 @@ class Board():
     def isValidMove(self, piece, piece_pos, end_pos):
         ### TODO
         if piece[1] == "p":
-            print("1")
             if piece[0] == "w":
-                print("2")
-                print(end_pos, piece_pos)
-                if end_pos[0] == piece_pos[0]:
-                    print("3")
-                    if end_pos[1] - piece_pos[1] == 1:
-                        print("4")
+                print(piece_pos, end_pos)
+                if end_pos[1] == piece_pos[1]:
+                    if 0 < piece_pos[0] - end_pos[0] <= 2 :
                         return True
             else:
-                if end_pos[0] == piece_pos[0]:
-                    if end_pos[1] - piece_pos[1] == 1:
+                print(piece_pos, end_pos)
+                if end_pos[1] == piece_pos[1]:
+                    if 0 > piece_pos[0] - end_pos[0] >= -2 :
                         return True
         if piece[1] == "b":
             ...
