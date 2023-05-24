@@ -114,13 +114,27 @@ class Board():
             if piece[0] == "w":
                 print(piece_pos, end_pos)
                 if end_pos[1] == piece_pos[1]:
-                    if 0 < piece_pos[0] - end_pos[0] <= 2 :
+                    if piece_pos[0] - end_pos[0] == 2 and piece_pos[0] == 6:
+                        if self.board[end_pos[0]][end_pos[1]] != "" or self.board[end_pos[0]+1][end_pos[1]] != "":
+                            print("J")
+                            return False
+                        return True
+                    elif piece_pos[0] - end_pos[0] == 1:
+                        if self.board[end_pos[0]][end_pos[1]] != "":
+                            return False
                         return True
             else:
                 print(piece_pos, end_pos)
                 if end_pos[1] == piece_pos[1]:
-                    if 0 > piece_pos[0] - end_pos[0] >= -2 :
+                    if piece_pos[0] - end_pos[0] == -2 and piece_pos[0]==1:
+                        if self.board[end_pos[0]][end_pos[1]] != "" or self.board[end_pos[0]-1][end_pos[1]] != "":
+                            return False
                         return True
+                    elif piece_pos[0] - end_pos[0] == -1:
+                        if self.board[end_pos[0]][end_pos[1]] != "":
+                            return False
+                        return True
+                    
         if piece[1] == "b":
             ...
         if piece[1] == "n":
@@ -246,6 +260,6 @@ while not done:
 
             print(row_clicked, column_clicked)
     pygame.display.flip()
-    clock.tick(60)
+    clock.tick(600)
 pygame.quit()
 
