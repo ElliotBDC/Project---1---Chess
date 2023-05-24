@@ -69,6 +69,7 @@ class Board():
     board_height = current_size[1]*0.7
     board_width = board_height
     box_dimen = (current_size[1]*0.7) // 8
+    move = 0
     board = [
     ['br', 'bn', 'bb', 'bq', 'bk', 'bb', 'bn', 'br'],
     ['bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'bp'],
@@ -94,16 +95,43 @@ class Board():
         for i in range(0, 8):
             for j in range(0, 8):
                 pygame.draw.rect(screen, GREEN if ((i+1) % 2 == 0 and (j+1) % 2 != 0) or ((i+1) % 2 != 0 and (j+1)%2==0) else WHITE,
-                                (current_size[0]*0.05+(i*self.box_dimen), 0.15*current_size[1]+(j*self.box_dimen), self.box_dimen, self.box_dimen))
+                            (current_size[0]*0.05+(i*self.box_dimen), 0.15*current_size[1]+(j*self.box_dimen), self.box_dimen, self.box_dimen))
         for y in range(0, 8):
             for x in range(0, 8):
                 for piece in images:
                     if piece[0] == self.board[y][x]:
-                        new_piece = pygame.transform.scale(piece[1], ((current_size[1]*0.7)/8.3, (current_size[1]*0.7)/8.3))
-                        piece_rect = new_piece.get_rect()
-                        piece_rect.center = (current_size[0]*0.05+(x*self.box_dimen)+(0.5*self.box_dimen), 0.15*current_size[1]+(y*self.box_dimen)+(0.5*self.box_dimen))
-                        screen.blit(new_piece, piece_rect)
+                        if y == piece_held[0] and x == piece_held[1]:
+                            ...
+                        else:
+                            new_piece = pygame.transform.scale(piece[1], ((current_size[1]*0.7)/8.3, (current_size[1]*0.7)/8.3))
+                            piece_rect = new_piece.get_rect()
+                            piece_rect.center = (current_size[0]*0.05+(x*self.box_dimen)+(0.5*self.box_dimen), 0.15*current_size[1]+(y*self.box_dimen)+(0.5*self.box_dimen))
+                            screen.blit(new_piece, piece_rect)
 
+    def isValidMove(self, piece, piece_pos, end_pos):
+        ### TODO
+        if piece[1] == "p":
+            print("1")
+            if piece[0] == "w":
+                print("2")
+                print(end_pos, piece_pos)
+                if end_pos[0] == piece_pos[0]:
+                    print("3")
+                    if end_pos[1] - piece_pos[1] == 1:
+                        print("4")
+                        return True
+            else:
+                if end_pos[0] == piece_pos[0]:
+                    if end_pos[1] - piece_pos[1] == 1:
+                        return True
+        if piece[1] == "b":
+            ...
+        if piece[1] == "n":
+            ...
+        if piece[1] == "r":
+            ...
+        if piece[1] == "k":
+            ...
 
 
 def hex_to_rgb(hex_color):
@@ -132,6 +160,7 @@ text_rect.center = (current_size[0] // 2, current_size[1] // 10)
 
 hold_click = False
 piece_lock = False
+piece_held = (9, 9, 'nn')
 
 board = Board()
 while not done:
@@ -166,8 +195,18 @@ while not done:
                     hold_click = True
         elif event.type == pygame.MOUSEBUTTONUP:
             if hold_click == True:
+                if piece_lock == True:
+                    if board.board_x+board.board_width > mouse_pos[0] > board.board_x and board.board_y < mouse_pos[1] < board.board_y+board.board_height:
+                        if (piece_held[2][0] == "w" and board.move % 2 == 0) or (piece_held[2][0] == "b" and board.move % 2 != 0):
+                            column_clicked = int((mouse_pos[0]-board.board_x) // board.box_dimen)
+                            row_clicked = int((mouse_pos[1]-board.board_y) // board.box_dimen)
+                            if board.isValidMove(piece_held[2], [piece_held[0], piece_held[1]], [row_clicked, column_clicked]) == True:
+                                board.board[piece_held[0]][piece_held[1]] = ""
+                                board.board[row_clicked][column_clicked] = piece_held[2]
+                                board.move = board.move + 1
                 hold_click = False
                 piece_lock = False
+                piece_held = (9, 9, 'nn')
 
     screen.fill(BACKGROUND_COLOUR_1)
     if current_state == HOME_SCREEN:
@@ -180,8 +219,8 @@ while not done:
         pygame.draw.rect(screen, BLACK, (board.board_x-current_size[0]*0.025, current_size[1]*0.87, (current_size[1]*0.7)//8*8+current_size[0]*0.05, current_size[1]*0.1))
         if hold_click == True:
             mouse_pos = pygame.mouse.get_pos()
-            row_clicked = int((mouse_pos[0]-board.board_x) // board.box_dimen)
-            column_clicked = int((mouse_pos[1]-board.board_y) // board.box_dimen)
+            column_clicked = int((mouse_pos[0]-board.board_x) // board.box_dimen)
+            row_clicked = int((mouse_pos[1]-board.board_y) // board.box_dimen)
             if (board.board_x+board.board_width > mouse_pos[0] > board.board_x and board.board_y < mouse_pos[1] < board.board_y+board.board_height) == False and hold_click == True:
                     hold_click = False
                     piece_lock = False
@@ -194,20 +233,22 @@ while not done:
                 screen.blit(type_piece, piece_rect)
             else:
                 try:
-                    if board.board[column_clicked][row_clicked] != "":
+                    if board.board[row_clicked][column_clicked] != "":
                         for piece in images:
-                            if piece[0] == board.board[column_clicked][row_clicked]:
+                            if piece[0] == board.board[row_clicked][column_clicked]:
                                 new_piece = pygame.transform.scale(piece[1], ((current_size[1]*0.7)/7.0, (current_size[1]*0.7)/7.0))
                                 piece_rect = new_piece.get_rect()
                                 piece_rect.center = (mouse_pos[0], mouse_pos[1])
                                 screen.blit(new_piece, piece_rect)
+                                piece_held = (row_clicked, column_clicked, piece[0])
                                 piece_lock = True
                                 type_piece = piece[1]
                 except Exception as e:
                     ...
+                    
 
             print(row_clicked, column_clicked)
     pygame.display.flip()
-    clock.tick(30)
+    clock.tick(60)
 pygame.quit()
 
