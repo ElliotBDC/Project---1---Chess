@@ -177,10 +177,28 @@ class Board():
             elif piece_pos[0] != end_pos[0] and piece_pos[1] == end_pos[1]:
                 return self.isValidDiagRow(piece_pos[0], piece_pos[1], end_pos[0], end_pos[1])
         if piece[1] == "k":
-            return True
+            if abs(end_pos[0]-piece_pos[0]) == abs(end_pos[1]-piece_pos[1]):
+                print("W")
+                if (abs(end_pos[0]-piece_pos[0]) == 1 and abs(end_pos[1]-piece_pos[1]) == 1):
+                    print("E")
+                    return True
+            elif (end_pos[0]==piece_pos[0]+1 or end_pos[0]==piece_pos[0]-1) and end_pos[1]==piece_pos[1]:
+                return True 
+            elif (end_pos[1]==piece_pos[1]+1 or end_pos[1]==piece_pos[1]-1) and end_pos[0]==piece_pos[0]:
+                return True
+            return False
         if piece[1] == "q":
-            return True
+            if piece_pos[0] == end_pos[0] and piece_pos[1] != end_pos[1]:
+                return self.isValidDiagRow(piece_pos[0], piece_pos[1], end_pos[0], end_pos[1])
+            elif piece_pos[0] != end_pos[0] and piece_pos[1] == end_pos[1]:
+                return self.isValidDiagRow(piece_pos[0], piece_pos[1], end_pos[0], end_pos[1])
+            elif abs(end_pos[0]-piece_pos[0]) == abs(end_pos[1]-piece_pos[1]):
+                return self.isValidDiagRow(piece_pos[0], piece_pos[1], end_pos[0], end_pos[1])
+            return False
 
+    def isInCheck():
+        ...
+    
     def isValidDiagRow(self, piece_row, piece_column, end_row, end_column):
         """
         for row_index, row in enumerate(self.board):
@@ -195,8 +213,6 @@ class Board():
         rc = -1 if (piece_column - end_column) > 0 else 1
         if end_column == piece_column:
             rc = 0
-
-            print("HERE")
         elif end_row == piece_row:
             rr = 0
             
@@ -259,7 +275,6 @@ while not done:
                     current_size = (screen_width*0.5,  screen_height*0.5)
                     pygame.display.set_mode(current_size)
                     fullscreen = False
-
                     text_rect.center = (current_size[0] // 2, current_size[1] // 10)
                 else:
                     current_size = ((screen_width, screen_height))
