@@ -79,7 +79,9 @@ class Board():
     board_height = current_size[1]*0.7
     board_width = board_height
     box_dimen = (current_size[1]*0.7) // 8
-    move = 0
+    move = 1
+    white_king = [7, 4]
+    black_king = [0, 4]
     board = [
     ['br', 'bn', 'bb', 'bq', 'bk', 'bb', 'bn', 'br'],
     ['bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'bp'],
@@ -196,18 +198,15 @@ class Board():
                 return self.isValidDiagRow(piece_pos[0], piece_pos[1], end_pos[0], end_pos[1])
             return False
 
-    def isInCheck():
-        ...
+
+    def isInCheck(self):
+        #Check for white king
+        diagonal_pieces = self.isValidDiagRow()
+        for piece in diagonal_pieces:
+            ...
+        #Check for black king
     
-    def isValidDiagRow(self, piece_row, piece_column, end_row, end_column):
-        """
-        for row_index, row in enumerate(self.board):
-            for column_index, column in enumerate(row):
-                if column != "":
-                    if abs(piece_row-row_index) - abs(piece_column-column_index) == 0:
-                        if row_index+column_index <= piece_row+piece_column:
-                            return False
-                            """
+    def isValidDiagRow(self, piece_row, piece_column, end_row, end_column, optional_return_blockingpiece=False):
         #Checking for the type of validation we will have to perform. rr/c stands for the step in the corresponding column/row
         rr = -1 if (piece_row - end_row) > 0 else 1
         rc = -1 if (piece_column - end_column) > 0 else 1
@@ -215,7 +214,8 @@ class Board():
             rc = 0
         elif end_row == piece_row:
             rr = 0
-            
+        
+        optional_list = []
         print("HERE3")
         print(abs(end_row-piece_row))
         for i in range(0, abs(end_row-piece_row)-1):
@@ -223,7 +223,12 @@ class Board():
             piece_column = piece_column + rc
             if self.board[piece_row][piece_column] != "":
                 print("HERE4")
-                return False
+                if optional_return_blockingpiece == True:
+                    optional_list.append((False, self.board[piece_row][piece_column]))
+                else:
+                    return False
+        if optional_return_blockingpiece == True:
+            return optional_list
         return True
                         
 
@@ -296,13 +301,17 @@ while not done:
             if hold_click == True:
                 if piece_lock == True:
                     if board.board_x+board.board_width > mouse_pos[0] > board.board_x and board.board_y < mouse_pos[1] < board.board_y+board.board_height:
-                        if (piece_held[2][0] == "w" and board.move % 2 == 0) or (piece_held[2][0] == "b" and board.move % 2 != 0):
+                        if (piece_held[2][0] == "w" and board.move == 1) or (piece_held[2][0] == "b" and board.move == -1):
                             column_clicked = int((mouse_pos[0]-board.board_x) // board.box_dimen)
                             row_clicked = int((mouse_pos[1]-board.board_y) // board.box_dimen)
                             if board.isValidMove(piece_held[2], [piece_held[0], piece_held[1]], [row_clicked, column_clicked]) == True:
+                                if piece_held[2] == "wk":
+                                    board.white_king == [row_clicked, column_clicked]
+                                elif piece_held[2] == "bk":
+                                    board.black_king == [row_clicked, column_clicked]
                                 board.board[piece_held[0]][piece_held[1]] = ""
                                 board.board[row_clicked][column_clicked] = piece_held[2]
-                                board.move = board.move + 1
+                                board.move = board.move * -1
                 hold_click = False
                 piece_lock = False
                 piece_held = (9, 9, 'nn')
