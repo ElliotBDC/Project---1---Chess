@@ -62,6 +62,16 @@ bb = ['bb', pygame.image.load("images/bb.png")]
 bk = ['bk', pygame.image.load("images/bk.png")]
 """
 
+classic_board = board = [
+    ['br', 'bn', 'bb', 'bq', 'bk', 'bb', 'bn', 'br'],
+    ['bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'bp'],
+    ['', '', '', '', '', '', '', ''],
+    ['', '', '', '', '', '', '', ''],
+    ['', '', '', '', '', '', '', ''],
+    ['', '', '', '', '', '', '', ''],
+    ['wp', 'wp', 'wp', 'wp', 'wp', 'wp', 'wp', 'wp'],
+    ['wr', 'wn', 'wb', 'wq', 'wk', 'wb', 'wn', 'wr']
+    ]
 
 class Board():
     board_x = current_size[0]*0.05
@@ -109,6 +119,12 @@ class Board():
                             screen.blit(new_piece, piece_rect)
 
     def isValidMove(self, piece, piece_pos, end_pos):
+        #Checking to make sure program doesnt accidentally count the user placing the piece back on the same square as a move
+        if (piece_pos[0], piece_pos[1]) == (end_pos[0], end_pos[1]):
+            return False
+        if self.board[end_pos[0]][end_pos[1]] != "":
+            if piece[0] == self.board[end_pos[0]][end_pos[1]][0]:
+                return False
         ### TODO
         if piece[1] == "p":
             if piece[0] == "w":
@@ -123,6 +139,12 @@ class Board():
                         if self.board[end_pos[0]][end_pos[1]] != "":
                             return False
                         return True
+                elif end_pos[1] == piece_pos[1]+1 or end_pos[1] == piece_pos[1]-1:
+                    if piece_pos[0] - end_pos[0] == 1:
+                        if self.board[end_pos[0]][end_pos[1]] != "":
+                            return True
+                    return False
+
             else:
                 print(piece_pos, end_pos)
                 if end_pos[1] == piece_pos[1]:
@@ -134,16 +156,62 @@ class Board():
                         if self.board[end_pos[0]][end_pos[1]] != "":
                             return False
                         return True
-                    
+                elif end_pos[1] == piece_pos[1]+1 or end_pos[1] == piece_pos[1]-1:
+                    if piece_pos[0] - end_pos[0] == -1:
+                        if self.board[end_pos[0]][end_pos[1]] != "":
+                            return True
+                    return False
         if piece[1] == "b":
-            ...
+            #Check for diagonal
+            if abs(end_pos[0]-piece_pos[0]) == abs(end_pos[1]-piece_pos[1]):
+                return self.isValidDiagRow(piece_pos[0], piece_pos[1], end_pos[0], end_pos[1])
         if piece[1] == "n":
-            ...
+            if abs(end_pos[0]-piece_pos[0]) == 2 and abs(end_pos[1]-piece_pos[1]) == 1:
+                return True
+            elif  abs(end_pos[0]-piece_pos[0]) == 1 and abs(end_pos[1]-piece_pos[1]) == 2:
+                return True
         if piece[1] == "r":
-            ...
+            print(end_pos, piece_pos)
+            if piece_pos[0] == end_pos[0] and piece_pos[1] != end_pos[1]:
+                return self.isValidDiagRow(piece_pos[0], piece_pos[1], end_pos[0], end_pos[1])
+            elif piece_pos[0] != end_pos[0] and piece_pos[1] == end_pos[1]:
+                return self.isValidDiagRow(piece_pos[0], piece_pos[1], end_pos[0], end_pos[1])
         if piece[1] == "k":
-            ...
+            return True
+        if piece[1] == "q":
+            return True
 
+    def isValidDiagRow(self, piece_row, piece_column, end_row, end_column):
+        """
+        for row_index, row in enumerate(self.board):
+            for column_index, column in enumerate(row):
+                if column != "":
+                    if abs(piece_row-row_index) - abs(piece_column-column_index) == 0:
+                        if row_index+column_index <= piece_row+piece_column:
+                            return False
+                            """
+        #Checking for the type of validation we will have to perform. rr/c stands for the step in the corresponding column/row
+        rr = -1 if (piece_row - end_row) > 0 else 1
+        rc = -1 if (piece_column - end_column) > 0 else 1
+        if end_column == piece_column:
+            rc = 0
+
+            print("HERE")
+        elif end_row == piece_row:
+            rr = 0
+            
+        print("HERE3")
+        print(abs(end_row-piece_row))
+        for i in range(0, abs(end_row-piece_row)-1):
+            piece_row = piece_row + rr
+            piece_column = piece_column + rc
+            if self.board[piece_row][piece_column] != "":
+                print("HERE4")
+                return False
+        return True
+                        
+
+            
 
 def hex_to_rgb(hex_color):
     hex_color = hex_color.lstrip("#")
@@ -174,6 +242,9 @@ piece_lock = False
 piece_held = (9, 9, 'nn')
 
 board = Board()
+
+from copy import deepcopy
+
 while not done:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -198,6 +269,8 @@ while not done:
                     text_rect.center = (current_size[0] // 2, current_size[1] // 10)
                 ###
                 ###
+            if event.key == pygame.K_r:
+                board.board = deepcopy(classic_board)
         elif event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
                     current_state = GAME_SCREEN
