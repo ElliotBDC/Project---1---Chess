@@ -1,4 +1,5 @@
 import pygame
+import time
 import pygame_plus
 
 #Colours (pygame requires them to be in binary representation)
@@ -16,6 +17,8 @@ screen_width = screen_size.current_w
 screen_height = screen_size.current_h
 current_size = (screen_width*0.5,  screen_height*0.5)
 screen = pygame.display.set_mode(current_size)
+pygame.display.set_caption("Chess")
+
 done = False
 
 clock = pygame.time.Clock()
@@ -31,6 +34,7 @@ br = pygame.image.load("images/br.png")
 bn = pygame.image.load("images/bn.png")
 bb = pygame.image.load("images/bb.png")
 bk = pygame.image.load("images/bk.png")
+pygame.display.set_icon(bp)
 
 images = [
     ['wp', wp],
@@ -120,13 +124,17 @@ class Board():
                             piece_rect.center = (current_size[0]*0.05+(x*self.box_dimen)+(0.5*self.box_dimen), 0.15*current_size[1]+(y*self.box_dimen)+(0.5*self.box_dimen))
                             screen.blit(new_piece, piece_rect)
 
-    def isValidMove(self, piece, piece_pos, end_pos):
+    def isValidMove(self, piece, piece_pos, end_pos, optional_king=False):
         #Checking to make sure program doesnt accidentally count the user placing the piece back on the same square as a move
         if (piece_pos[0], piece_pos[1]) == (end_pos[0], end_pos[1]):
             return False
         if self.board[end_pos[0]][end_pos[1]] != "":
             if piece[0] == self.board[end_pos[0]][end_pos[1]][0]:
                 return False
+        step = 0
+        if optional_king == True:
+            step = 1
+
         ### TODO
         if piece[1] == "p":
             if piece[0] == "w":
@@ -166,7 +174,7 @@ class Board():
         if piece[1] == "b":
             #Check for diagonal
             if abs(end_pos[0]-piece_pos[0]) == abs(end_pos[1]-piece_pos[1]):
-                return self.isValidDiagRow(piece_pos[0], piece_pos[1], end_pos[0], end_pos[1])
+                return self.isValidDiagRow(piece_pos[0], piece_pos[1], end_pos[0]+(step*(1 if end_pos[0]-piece_pos[0] > 0 else -1)), end_pos[1]+(step*(1 if end_pos[1]-piece_pos[1] > 0 else -1)))
         if piece[1] == "n":
             if abs(end_pos[0]-piece_pos[0]) == 2 and abs(end_pos[1]-piece_pos[1]) == 1:
                 return True
@@ -200,11 +208,17 @@ class Board():
 
 
     def isInCheck(self):
-        #Check for white king
-        diagonal_pieces = self.isValidDiagRow()
-        for piece in diagonal_pieces:
-            ...
-        #Check for black king
+        white_pieces = [(y, index_x, index_y) for index_x, x in enumerate(self.board) for index_y, y in enumerate(x) if y != "" and y[0] == "w"]
+        black_pieces = [(y, index_x, index_y) for index_x, x in enumerate(self.board) for index_y, y in enumerate(x) if y != "" and y[0] == "b"] 
+        for x in white_pieces:
+            if self.isValidMove(x[0], (x[1], x[2]), (self.white_king[0], self.white_king[1]), optional_king=True) == False:
+                return True, "WHITE"
+        for x in black_pieces:
+            if self.isValidMove(x[0], (x[1], x[2]), (self.black_king[0], self.black_king[1]), optional_king=True):
+                return True, "BLACK"
+        return False
+            
+
     
     def isValidDiagRow(self, piece_row, piece_column, end_row, end_column, optional_return_blockingpiece=False):
         #Checking for the type of validation we will have to perform. rr/c stands for the step in the corresponding column/row
@@ -232,8 +246,6 @@ class Board():
         return True
                         
 
-            
-
 def hex_to_rgb(hex_color):
     hex_color = hex_color.lstrip("#")
     return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
@@ -247,7 +259,7 @@ GAME_SCREEN = "GAME_SCREEN"
 
 current_state = HOME_SCREEN
 
-text = "Chess"
+text = "CHESS"
 font_name = "freesansbold.ttf"
 font_size = 32
 font_color = (255, 255, 255)
@@ -306,9 +318,9 @@ while not done:
                             row_clicked = int((mouse_pos[1]-board.board_y) // board.box_dimen)
                             if board.isValidMove(piece_held[2], [piece_held[0], piece_held[1]], [row_clicked, column_clicked]) == True:
                                 if piece_held[2] == "wk":
-                                    board.white_king == [row_clicked, column_clicked]
+                                    board.white_king = [row_clicked, column_clicked]
                                 elif piece_held[2] == "bk":
-                                    board.black_king == [row_clicked, column_clicked]
+                                    board.black_king = [row_clicked, column_clicked]
                                 board.board[piece_held[0]][piece_held[1]] = ""
                                 board.board[row_clicked][column_clicked] = piece_held[2]
                                 board.move = board.move * -1
@@ -318,9 +330,10 @@ while not done:
 
     screen.fill(BACKGROUND_COLOUR_1)
     if current_state == HOME_SCREEN:
-        
         screen.blit(text_surface, text_rect)
     elif current_state == GAME_SCREEN:
+        if board.isInCheck() == (True, "BLACK"):
+            print("BLACK KING IS IN CHECK")
         board.drawBoard(screen)
         ### DRAW THE BOARD
         pygame.draw.rect(screen, BLACK, (board.board_x-current_size[0]*0.025, current_size[1]*0.025, (current_size[1]*0.7//8)*8+current_size[0]*0.05, current_size[1]*0.1))
@@ -357,6 +370,6 @@ while not done:
 
             print(row_clicked, column_clicked)
     pygame.display.flip()
-    clock.tick(600)
+    clock.tick(60)
 pygame.quit()
 
