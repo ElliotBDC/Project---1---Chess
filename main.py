@@ -174,6 +174,7 @@ class Board():
         if piece[1] == "b":
             #Check for diagonal
             if abs(end_pos[0]-piece_pos[0]) == abs(end_pos[1]-piece_pos[1]):
+                print(self.isValidDiagRow(piece_pos[0], piece_pos[1], end_pos[0]+(step*(1 if end_pos[0]-piece_pos[0] > 0 else -1)), end_pos[1]+(step*(1 if end_pos[1]-piece_pos[1] > 0 else -1))))
                 return self.isValidDiagRow(piece_pos[0], piece_pos[1], end_pos[0]+(step*(1 if end_pos[0]-piece_pos[0] > 0 else -1)), end_pos[1]+(step*(1 if end_pos[1]-piece_pos[1] > 0 else -1)))
         if piece[1] == "n":
             if abs(end_pos[0]-piece_pos[0]) == 2 and abs(end_pos[1]-piece_pos[1]) == 1:
@@ -211,10 +212,10 @@ class Board():
         white_pieces = [(y, index_x, index_y) for index_x, x in enumerate(self.board) for index_y, y in enumerate(x) if y != "" and y[0] == "w"]
         black_pieces = [(y, index_x, index_y) for index_x, x in enumerate(self.board) for index_y, y in enumerate(x) if y != "" and y[0] == "b"] 
         for x in white_pieces:
-            if self.isValidMove(x[0], (x[1], x[2]), (self.white_king[0], self.white_king[1]), optional_king=True) == False:
+            if self.isValidMove(x[0], (x[1], x[2]), (self.black_king[0], self.black_king[1]), optional_king=True) == (False, "bk"):
                 return True, "WHITE"
         for x in black_pieces:
-            if self.isValidMove(x[0], (x[1], x[2]), (self.black_king[0], self.black_king[1]), optional_king=True):
+            if self.isValidMove(x[0], (x[1], x[2]), (self.white_king[0], self.white_king[1]), optional_king=True) == (False, "wk"):
                 return True, "BLACK"
         return False
             
@@ -237,14 +238,18 @@ class Board():
             piece_column = piece_column + rc
             if self.board[piece_row][piece_column] != "":
                 print("HERE4")
+                """
                 if optional_return_blockingpiece == True:
                     optional_list.append((False, self.board[piece_row][piece_column]))
                 else:
-                    return False
+                """
+                return False, self.board[piece_row][piece_column]
+        """
         if optional_return_blockingpiece == True:
             return optional_list
+        """
         return True
-                        
+                      
 
 def hex_to_rgb(hex_color):
     hex_color = hex_color.lstrip("#")
@@ -316,7 +321,7 @@ while not done:
                         if (piece_held[2][0] == "w" and board.move == 1) or (piece_held[2][0] == "b" and board.move == -1):
                             column_clicked = int((mouse_pos[0]-board.board_x) // board.box_dimen)
                             row_clicked = int((mouse_pos[1]-board.board_y) // board.box_dimen)
-                            if board.isValidMove(piece_held[2], [piece_held[0], piece_held[1]], [row_clicked, column_clicked]) == True:
+                            if board.isValidMove(piece_held[2], [piece_held[0], piece_held[1]], [row_clicked, column_clicked])[0] == True:
                                 if piece_held[2] == "wk":
                                     board.white_king = [row_clicked, column_clicked]
                                 elif piece_held[2] == "bk":
@@ -332,6 +337,7 @@ while not done:
     if current_state == HOME_SCREEN:
         screen.blit(text_surface, text_rect)
     elif current_state == GAME_SCREEN:
+        print(board.isInCheck())
         if board.isInCheck() == (True, "BLACK"):
             print("BLACK KING IS IN CHECK")
         board.drawBoard(screen)
