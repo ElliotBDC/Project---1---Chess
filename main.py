@@ -51,21 +51,6 @@ images = [
     ['bk', bk]
 ]
 
-"""
-wp = ['wp', pygame.image.load("images/wp.png")]
-wr = ['wr', pygame.image.load("images/wr.png")]
-wb = ['wb', pygame.image.load("images/wb.png")]
-wn = ['wn', pygame.image.load("images/wn.png")]
-wq = ['wq', pygame.image.load("images/wq.png")]
-wk = ['wk', pygame.image.load("images/wk.png")]
-bp = ['bp', pygame.image.load("images/bp.png")]
-bq = ['bq', pygame.image.load("images/bq.png")]
-br = ['br', pygame.image.load("images/br.png")]
-bn = ['bn', pygame.image.load("images/bn.png")]
-bb = ['bb', pygame.image.load("images/bb.png")]
-bk = ['bk', pygame.image.load("images/bk.png")]
-"""
-
 classic_board = board = [
     ['br', 'bn', 'bb', 'bq', 'bk', 'bb', 'bn', 'br'],
     ['bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'bp'],
@@ -96,11 +81,9 @@ class Board():
     ['wp', 'wp', 'wp', 'wp', 'wp', 'wp', 'wp', 'wp'],
     ['wr', 'wn', 'wb', 'wq', 'wk', 'wb', 'wn', 'wr']
     ]
-
    
     def __init__(self) -> None:
         pass
-    #262626
 
     def drawBoard(self, screen):
         self.box_dimen = (current_size[1]*0.7) // 8
@@ -212,30 +195,21 @@ class Board():
             
 
     
-    def isValidDiagRow(self, piece_row, piece_column, end_row, end_column, optional_return_blockingpiece=False):
+    def isValidDiagRow(self, piece_row, piece_column, end_row, end_column):
         #Checking for the type of validation we will have to perform. rr/c stands for the step in the corresponding column/row
         rr = -1 if (piece_row - end_row) > 0 else 1
         rc = -1 if (piece_column - end_column) > 0 else 1
+        iterAmount = piece_row-end_row
         if end_column == piece_column:
             rc = 0
         elif end_row == piece_row:
             rr = 0
-        
-        #optional_list = []
-        for i in range(0, abs(end_row-piece_row)-1):
+            iterAmount = piece_column-end_column
+        for i in range(0, abs(iterAmount)-1):
             piece_row = piece_row + rr
             piece_column = piece_column + rc
             if self.board[piece_row][piece_column] != "":
-                """
-                if optional_return_blockingpiece == True:
-                    optional_list.append((False, self.board[piece_row][piece_column]))
-                else:
-                """
-                return False#, self.board[piece_row][piece_column]
-        """
-        if optional_return_blockingpiece == True:
-            return optional_list
-        """
+                return False
         return True
                       
 
