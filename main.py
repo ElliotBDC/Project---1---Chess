@@ -124,21 +124,16 @@ class Board():
                             piece_rect.center = (current_size[0]*0.05+(x*self.box_dimen)+(0.5*self.box_dimen), 0.15*current_size[1]+(y*self.box_dimen)+(0.5*self.box_dimen))
                             screen.blit(new_piece, piece_rect)
 
-    def isValidMove(self, piece, piece_pos, end_pos, optional_king=False):
+    def isValidMove(self, piece, piece_pos, end_pos):
         #Checking to make sure program doesnt accidentally count the user placing the piece back on the same square as a move
         if (piece_pos[0], piece_pos[1]) == (end_pos[0], end_pos[1]):
             return False
         if self.board[end_pos[0]][end_pos[1]] != "":
             if piece[0] == self.board[end_pos[0]][end_pos[1]][0]:
                 return False
-        step = 0
-        if optional_king == True:
-            step = 1
-
         ### TODO
         if piece[1] == "p":
             if piece[0] == "w":
-                print(piece_pos, end_pos)
                 if end_pos[1] == piece_pos[1]:
                     if piece_pos[0] - end_pos[0] == 2 and piece_pos[0] == 6:
                         if self.board[end_pos[0]][end_pos[1]] != "" or self.board[end_pos[0]+1][end_pos[1]] != "":
@@ -154,7 +149,6 @@ class Board():
                             return True
                     return False
             else:
-                print(piece_pos, end_pos)
                 if end_pos[1] == piece_pos[1]:
                     if piece_pos[0] - end_pos[0] == -2 and piece_pos[0]==1:
                         if self.board[end_pos[0]][end_pos[1]] != "" or self.board[end_pos[0]-1][end_pos[1]] != "":
@@ -172,7 +166,7 @@ class Board():
         if piece[1] == "b":
             #Check for diagonal
             if abs(end_pos[0]-piece_pos[0]) == abs(end_pos[1]-piece_pos[1]):
-                return self.isValidDiagRow(piece_pos[0], piece_pos[1], end_pos[0]+(step*(1 if end_pos[0]-piece_pos[0] > 0 else -1)), end_pos[1]+(step*(1 if end_pos[1]-piece_pos[1] > 0 else -1)))
+                return self.isValidDiagRow(piece_pos[0], piece_pos[1], end_pos[0], end_pos[1])
         if piece[1] == "n":
             if abs(end_pos[0]-piece_pos[0]) == 2 and abs(end_pos[1]-piece_pos[1]) == 1:
                 return True
@@ -180,16 +174,13 @@ class Board():
                 return True
             return False
         if piece[1] == "r":
-            print(end_pos, piece_pos)
             if piece_pos[0] == end_pos[0] and piece_pos[1] != end_pos[1]:
                 return self.isValidDiagRow(piece_pos[0], piece_pos[1], end_pos[0], end_pos[1])
             elif piece_pos[0] != end_pos[0] and piece_pos[1] == end_pos[1]:
                 return self.isValidDiagRow(piece_pos[0], piece_pos[1], end_pos[0], end_pos[1])
         if piece[1] == "k":
             if abs(end_pos[0]-piece_pos[0]) == abs(end_pos[1]-piece_pos[1]):
-                print("W")
                 if (abs(end_pos[0]-piece_pos[0]) == 1 and abs(end_pos[1]-piece_pos[1]) == 1):
-                    print("E")
                     return True
             elif (end_pos[0]==piece_pos[0]+1 or end_pos[0]==piece_pos[0]-1) and end_pos[1]==piece_pos[1]:
                 return True 
@@ -207,15 +198,15 @@ class Board():
 
 
     def isInCheck(self):
-        white_pieces = [(y, index_x, index_y) for index_x, x in enumerate(self.board) for index_y, y in enumerate(x) if y != "" and y[0] == "w" and abs(self.black_king[0]-index_x) == abs(self.black_king[1]-index_y)]
-        black_pieces = [(y, index_x, index_y) for index_x, x in enumerate(self.board) for index_y, y in enumerate(x) if y != "" and y[0] == "b" and abs(self.white_king[0]-index_x) == abs(self.white_king[1]-index_y)]
+        white_pieces = [(y, index_x, index_y) for index_x, x in enumerate(self.board) for index_y, y in enumerate(x) if y != "" and y[0] == "w" and (abs(self.black_king[0]-index_x) == abs(self.black_king[1]-index_y) or (self.black_king[0]==index_x and self.black_king[1] != index_x) or (self.black_king[1]==index_y and self.black_king[0] != index_x))]
+        black_pieces = [(y, index_x, index_y) for index_x, x in enumerate(self.board) for index_y, y in enumerate(x) if y != "" and y[0] == "b" and (abs(self.white_king[0]-index_x) == abs(self.white_king[1]-index_y) or (self.white_king[0]==index_x and self.white_king[1] != index_x) or (self.white_king[1]==index_y and self.white_king[0] != index_x))]
         for x in white_pieces:
             #if (x[0] == self.black_king[0] and x[1] != self.black_king[1]) or (x[0] != self.black_king[0] and x[1] == self.black_king[1]): 
-                if self.isValidMove(x[0], (x[1], x[2]), (self.black_king[0], self.black_king[1]), optional_king=True):
+                if self.isValidMove(x[0], (x[1], x[2]), (self.black_king[0], self.black_king[1])) == True:
                     return True, "BLACK"
         for x in black_pieces:
             #if (x[0] == self.white_king[0] and x[1] != self.white_king[1]) or (x[0] != self.white_king[0] and x[1] == self.white_king[1]): 
-                if self.isValidMove(x[0], (x[1], x[2]), (self.white_king[0], self.white_king[1]), optional_king=True):
+                if self.isValidMove(x[0], (x[1], x[2]), (self.white_king[0], self.white_king[1])) == True:
                     return True, "WHITE"
         return False
             
@@ -231,19 +222,16 @@ class Board():
             rr = 0
         
         #optional_list = []
-        print("HERE3")
-        print(abs(end_row-piece_row))
         for i in range(0, abs(end_row-piece_row)-1):
             piece_row = piece_row + rr
             piece_column = piece_column + rc
             if self.board[piece_row][piece_column] != "":
-                print("HERE4")
                 """
                 if optional_return_blockingpiece == True:
                     optional_list.append((False, self.board[piece_row][piece_column]))
                 else:
                 """
-                return False, self.board[piece_row][piece_column]
+                return False#, self.board[piece_row][piece_column]
         """
         if optional_return_blockingpiece == True:
             return optional_list
@@ -354,7 +342,6 @@ while not done:
                     hold_click = False
                     piece_lock = False
                     continue
-            print(row_clicked, column_clicked)
             if piece_lock == True:
                 type_piece = pygame.transform.scale(type_piece, ((current_size[1]*0.7)/7.0, (current_size[1]*0.7)/7.0))
                 piece_rect = type_piece.get_rect()
@@ -374,9 +361,6 @@ while not done:
                                 type_piece = piece[1]
                 except Exception as e:
                     ...
-                    
-
-            print(row_clicked, column_clicked)
     pygame.display.flip()
     clock.tick(60)
 pygame.quit()
