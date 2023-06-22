@@ -142,7 +142,6 @@ class Board():
                 if end_pos[1] == piece_pos[1]:
                     if piece_pos[0] - end_pos[0] == 2 and piece_pos[0] == 6:
                         if self.board[end_pos[0]][end_pos[1]] != "" or self.board[end_pos[0]+1][end_pos[1]] != "":
-                            print("J")
                             return False
                         return True
                     elif piece_pos[0] - end_pos[0] == 1:
@@ -154,7 +153,6 @@ class Board():
                         if self.board[end_pos[0]][end_pos[1]] != "":
                             return True
                     return False
-
             else:
                 print(piece_pos, end_pos)
                 if end_pos[1] == piece_pos[1]:
@@ -174,13 +172,13 @@ class Board():
         if piece[1] == "b":
             #Check for diagonal
             if abs(end_pos[0]-piece_pos[0]) == abs(end_pos[1]-piece_pos[1]):
-                print(self.isValidDiagRow(piece_pos[0], piece_pos[1], end_pos[0]+(step*(1 if end_pos[0]-piece_pos[0] > 0 else -1)), end_pos[1]+(step*(1 if end_pos[1]-piece_pos[1] > 0 else -1))))
                 return self.isValidDiagRow(piece_pos[0], piece_pos[1], end_pos[0]+(step*(1 if end_pos[0]-piece_pos[0] > 0 else -1)), end_pos[1]+(step*(1 if end_pos[1]-piece_pos[1] > 0 else -1)))
         if piece[1] == "n":
             if abs(end_pos[0]-piece_pos[0]) == 2 and abs(end_pos[1]-piece_pos[1]) == 1:
                 return True
             elif  abs(end_pos[0]-piece_pos[0]) == 1 and abs(end_pos[1]-piece_pos[1]) == 2:
                 return True
+            return False
         if piece[1] == "r":
             print(end_pos, piece_pos)
             if piece_pos[0] == end_pos[0] and piece_pos[1] != end_pos[1]:
@@ -209,14 +207,16 @@ class Board():
 
 
     def isInCheck(self):
-        white_pieces = [(y, index_x, index_y) for index_x, x in enumerate(self.board) for index_y, y in enumerate(x) if y != "" and y[0] == "w"]
-        black_pieces = [(y, index_x, index_y) for index_x, x in enumerate(self.board) for index_y, y in enumerate(x) if y != "" and y[0] == "b"] 
+        white_pieces = [(y, index_x, index_y) for index_x, x in enumerate(self.board) for index_y, y in enumerate(x) if y != "" and y[0] == "w" and abs(self.black_king[0]-index_x) == abs(self.black_king[1]-index_y)]
+        black_pieces = [(y, index_x, index_y) for index_x, x in enumerate(self.board) for index_y, y in enumerate(x) if y != "" and y[0] == "b" and abs(self.white_king[0]-index_x) == abs(self.white_king[1]-index_y)]
         for x in white_pieces:
-            if self.isValidMove(x[0], (x[1], x[2]), (self.black_king[0], self.black_king[1]), optional_king=True) == (False, "bk"):
-                return True, "WHITE"
+            #if (x[0] == self.black_king[0] and x[1] != self.black_king[1]) or (x[0] != self.black_king[0] and x[1] == self.black_king[1]): 
+                if self.isValidMove(x[0], (x[1], x[2]), (self.black_king[0], self.black_king[1]), optional_king=True):
+                    return True, "BLACK"
         for x in black_pieces:
-            if self.isValidMove(x[0], (x[1], x[2]), (self.white_king[0], self.white_king[1]), optional_king=True) == (False, "wk"):
-                return True, "BLACK"
+            #if (x[0] == self.white_king[0] and x[1] != self.white_king[1]) or (x[0] != self.white_king[0] and x[1] == self.white_king[1]): 
+                if self.isValidMove(x[0], (x[1], x[2]), (self.white_king[0], self.white_king[1]), optional_king=True):
+                    return True, "WHITE"
         return False
             
 
@@ -230,7 +230,7 @@ class Board():
         elif end_row == piece_row:
             rr = 0
         
-        optional_list = []
+        #optional_list = []
         print("HERE3")
         print(abs(end_row-piece_row))
         for i in range(0, abs(end_row-piece_row)-1):
@@ -321,7 +321,7 @@ while not done:
                         if (piece_held[2][0] == "w" and board.move == 1) or (piece_held[2][0] == "b" and board.move == -1):
                             column_clicked = int((mouse_pos[0]-board.board_x) // board.box_dimen)
                             row_clicked = int((mouse_pos[1]-board.board_y) // board.box_dimen)
-                            if board.isValidMove(piece_held[2], [piece_held[0], piece_held[1]], [row_clicked, column_clicked])[0] == True:
+                            if board.isValidMove(piece_held[2], [piece_held[0], piece_held[1]], [row_clicked, column_clicked]) == True:
                                 if piece_held[2] == "wk":
                                     board.white_king = [row_clicked, column_clicked]
                                 elif piece_held[2] == "bk":
@@ -337,9 +337,11 @@ while not done:
     if current_state == HOME_SCREEN:
         screen.blit(text_surface, text_rect)
     elif current_state == GAME_SCREEN:
-        print(board.isInCheck())
+        #print(board.isInCheck())
         if board.isInCheck() == (True, "BLACK"):
             print("BLACK KING IS IN CHECK")
+        if board.isInCheck() == (True, "WHITE"):
+            print("WHITE IS IN CHECK")
         board.drawBoard(screen)
         ### DRAW THE BOARD
         pygame.draw.rect(screen, BLACK, (board.board_x-current_size[0]*0.025, current_size[1]*0.025, (current_size[1]*0.7//8)*8+current_size[0]*0.05, current_size[1]*0.1))
@@ -378,4 +380,3 @@ while not done:
     pygame.display.flip()
     clock.tick(60)
 pygame.quit()
-
