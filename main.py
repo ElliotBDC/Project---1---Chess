@@ -1,6 +1,6 @@
 import pygame
 import time
-import pygame_plus
+from copy import deepcopy
 
 #Colours (pygame requires them to be in binary representation)
 BLACK = (0, 0, 0)
@@ -62,13 +62,23 @@ classic_board = board = [
     ['wr', 'wn', 'wb', 'wq', 'wk', 'wb', 'wn', 'wr']
     ]
 
+def secondsToTime(seconds):
+    minutes = seconds // 60
+    secondsLeft = seconds - (minutes*60)
+    if minutes < 10:
+        minutes = "0" + str(minutes)
+    if secondsLeft < 10:
+        secondsLeft = "0" + str(secondsLeft)
+    return (f"{minutes}:{secondsLeft}")
+
+
 class Board():
     board_x = current_size[0]*0.05
     board_y = 0.15*current_size[1]
     board_height = current_size[1]*0.7
     board_width = board_height
     box_dimen = (current_size[1]*0.7) // 8
-    move = 1
+    move = 0
     white_king = [7, 4]
     black_king = [0, 4]
     board = [
@@ -93,7 +103,7 @@ class Board():
         self.board_width = self.board_height
         for i in range(0, 8):
             for j in range(0, 8):
-                pygame.draw.rect(screen, GREEN if ((i+1) % 2 == 0 and (j+1) % 2 != 0) or ((i+1) % 2 != 0 and (j+1)%2==0) else WHITE,
+                pygame.draw.rect(screen, BLACK if ((i+1) % 2 == 0 and (j+1) % 2 != 0) or ((i+1) % 2 != 0 and (j+1)%2==0) else WHITE,
                             (current_size[0]*0.05+(i*self.box_dimen), 0.15*current_size[1]+(j*self.box_dimen), self.box_dimen, self.box_dimen))
         for y in range(0, 8):
             for x in range(0, 8):
@@ -192,8 +202,29 @@ class Board():
                 if self.isValidMove(x[0], (x[1], x[2]), (self.white_king[0], self.white_king[1])) == True:
                     return True, "WHITE"
         return False
-            
-
+    
+    def isCheckmate(self, COLOUR):
+        king = (deepcopy(self.white_king), 'wk') if COLOUR == "WHITE" else (deepcopy(self.black_king), 'bk')
+        for row in range(-1, 2):
+            for column in range(-1, 2):
+                print("H")
+                if (0 > row+king[0][0] or row+king[0][0] > 7 or 0 > column+king[0][1] or column+king[0][1] > 7) == False:
+                    print("HELLOFF")
+                    if self.isValidMove('bk', king[0], [king[0][0]+row, king[0][1]+column]):
+                            print("HE")
+                            self.black_king = [king[0][0]+row, king[0][1]+column]
+                            if self.isInCheck() == (True, "BLACK"):
+                                ...
+                                print("HA")
+                            else: 
+                                print("HAE")
+                                self.black_king = [king[0][0], king[0][1]]
+                                print(self.black_king)
+                                return False
+        self.black_king = [king[0][0], king[0][1]]
+        print("HELLO")
+        return True
+        
     
     def isValidDiagRow(self, piece_row, piece_column, end_row, end_column):
         #Checking for the type of validation we will have to perform. rr/c stands for the step in the corresponding column/row
@@ -211,11 +242,38 @@ class Board():
             if self.board[piece_row][piece_column] != "":
                 return False
         return True
-                      
+
+                   
+class Game():
+    player_one_time = 600
+    player_two_time = 600
+    startTime = 0
+    lastTime = 0
+
+    def __init__(self) -> None:
+        pass
+
+    def startGame(self):
+        self.startTime = time.time()
+    
+    def updateTimer(self, player):
+        if player == 1:
+            self.player_one_time = self.player_one_time - 1
+        else:
+            self.player_two_time = self.player_two_time - 1
+        self.lastTime = self.lastTime + 1
+            
+
+    def __str__(self) -> str:
+        #return the result of the game
+        return f"Hello"
 
 def hex_to_rgb(hex_color):
     hex_color = hex_color.lstrip("#")
     return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+
+newGame = Game()
+newGame.startGame()
 
 BACKGROUND_COLOUR_1 = hex_to_rgb('#262626')
 
@@ -226,16 +284,26 @@ GAME_SCREEN = "GAME_SCREEN"
 
 current_state = HOME_SCREEN
 
-text = "CHESS"
+
 font_name = "freesansbold.ttf"
 font_size = 32
 font_color = (255, 255, 255)
 
-font = pygame.font.Font(font_name, font_size)
-text_surface = font.render(text, True, font_color)
 
-text_rect = text_surface.get_rect()
-text_rect.center = (current_size[0] // 2, current_size[1] // 10)
+font = pygame.font.Font(font_name, font_size)
+###
+game_name = "CHESS"
+text_surface = font.render(game_name, True, font_color)
+game_name_rect = text_surface.get_rect()
+game_name_rect.center = (current_size[0] // 2, current_size[1] // 10)
+###
+screen_player_one_timer = secondsToTime(newGame.player_one_time)
+screen_player_one_timer_text_surface = font.render(screen_player_one_timer, True, WHITE)  # Render the text with black color
+screen_player_one_timer_rect = screen_player_one_timer_text_surface.get_rect()
+###
+screen_player_two_timer = secondsToTime(newGame.player_two_time)
+screen_player_two_timer_text_surface = font.render(screen_player_two_timer, True, WHITE)  # Render the text with black color
+screen_player_two_timer_rect = screen_player_two_timer_text_surface.get_rect()
 
 hold_click = False
 piece_lock = False
@@ -243,7 +311,8 @@ piece_held = (9, 9, 'nn')
 
 board = Board()
 
-from copy import deepcopy
+
+
 
 while not done:
     for event in pygame.event.get():
@@ -259,13 +328,13 @@ while not done:
                     current_size = (screen_width*0.5,  screen_height*0.5)
                     pygame.display.set_mode(current_size)
                     fullscreen = False
-                    text_rect.center = (current_size[0] // 2, current_size[1] // 10)
+                    game_name_rect.center = (current_size[0] // 2, current_size[1] // 10)
                 else:
                     current_size = ((screen_width, screen_height))
                     pygame.display.set_mode(current_size, pygame.FULLSCREEN)
                     fullscreen = True
 
-                    text_rect.center = (current_size[0] // 2, current_size[1] // 10)
+                    game_name_rect.center = (current_size[0] // 2, current_size[1] // 10)
                 ###
                 ###
             if event.key == pygame.K_r:
@@ -280,7 +349,7 @@ while not done:
             if hold_click == True:
                 if piece_lock == True:
                     if board.board_x+board.board_width > mouse_pos[0] > board.board_x and board.board_y < mouse_pos[1] < board.board_y+board.board_height:
-                        if (piece_held[2][0] == "w" and board.move == 1) or (piece_held[2][0] == "b" and board.move == -1):
+                        if (piece_held[2][0] == "w" and board.move % 2 == 0) or (piece_held[2][0] == "b" and board.move % 2 != 0):
                             column_clicked = int((mouse_pos[0]-board.board_x) // board.box_dimen)
                             row_clicked = int((mouse_pos[1]-board.board_y) // board.box_dimen)
                             if board.isValidMove(piece_held[2], [piece_held[0], piece_held[1]], [row_clicked, column_clicked]) == True:
@@ -290,24 +359,47 @@ while not done:
                                     board.black_king = [row_clicked, column_clicked]
                                 board.board[piece_held[0]][piece_held[1]] = ""
                                 board.board[row_clicked][column_clicked] = piece_held[2]
-                                board.move = board.move * -1
+                                board.move = board.move + 1
                 hold_click = False
                 piece_lock = False
                 piece_held = (9, 9, 'nn')
 
     screen.fill(BACKGROUND_COLOUR_1)
     if current_state == HOME_SCREEN:
-        screen.blit(text_surface, text_rect)
+        screen.blit(text_surface, game_name_rect)
     elif current_state == GAME_SCREEN:
         #print(board.isInCheck())
         if board.isInCheck() == (True, "BLACK"):
-            print("BLACK KING IS IN CHECK")
+            if board.isCheckmate("BLACK"):
+                print("CHECKMATE!!")
+            else:
+                print("BLACK KING IS IN CHECK")
         if board.isInCheck() == (True, "WHITE"):
             print("WHITE IS IN CHECK")
         board.drawBoard(screen)
         ### DRAW THE BOARD
-        pygame.draw.rect(screen, BLACK, (board.board_x-current_size[0]*0.025, current_size[1]*0.025, (current_size[1]*0.7//8)*8+current_size[0]*0.05, current_size[1]*0.1))
-        pygame.draw.rect(screen, BLACK, (board.board_x-current_size[0]*0.025, current_size[1]*0.87, (current_size[1]*0.7)//8*8+current_size[0]*0.05, current_size[1]*0.1))
+        box1 = pygame.draw.rect(screen, BLACK, (board.board_x-current_size[0]*0.025, current_size[1]*0.025, (current_size[1]*0.7//8)*8+current_size[0]*0.05, current_size[1]*0.1))
+        box2 = pygame.draw.rect(screen, BLACK, (board.board_x-current_size[0]*0.025, current_size[1]*0.87, (current_size[1]*0.7)//8*8+current_size[0]*0.05, current_size[1]*0.1))
+    
+        #Timer
+        if int(time.time() - newGame.startTime) > newGame.lastTime:
+            print("HELLO")
+            print((1 if board.move % 2 == 0 else 2))
+            newGame.updateTimer((1 if board.move % 2 == 0 else 2))
+            screen_player_one_timer = secondsToTime(newGame.player_one_time)
+            screen_player_one_timer_text_surface = font.render(screen_player_one_timer, True, WHITE)
+            screen_player_one_timer_rect = screen_player_one_timer_text_surface.get_rect()
+            screen_player_one_timer_rect.center = box2.center
+            ###
+            screen_player_two_timer = secondsToTime(newGame.player_two_time)
+            screen_player_two_timer_text_surface = font.render(screen_player_two_timer, True, WHITE)
+            screen_player_two_timer_rect = screen_player_two_timer_text_surface.get_rect()
+            screen_player_two_timer_rect.center = box1.center
+            
+        
+        
+        screen.blit(screen_player_one_timer_text_surface, screen_player_one_timer_rect)
+        screen.blit(screen_player_two_timer_text_surface, screen_player_two_timer_rect)
         if hold_click == True:
             mouse_pos = pygame.mouse.get_pos()
             column_clicked = int((mouse_pos[0]-board.board_x) // board.box_dimen)
