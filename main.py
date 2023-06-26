@@ -132,7 +132,6 @@ class Board():
         if self.board[end_pos[0]][end_pos[1]] != "":
             if piece[0] == self.board[end_pos[0]][end_pos[1]][0]:
                 return False
-        ### TODO
         if piece[1] == "p":
             if piece[0] == "w":
                 if end_pos[1] == piece_pos[1]:
