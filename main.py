@@ -8,6 +8,14 @@ WHITE = (255, 255, 255)
 RED = (255, 0, 0)
 #For the chess board
 GREEN = (118,150,86)
+
+def hex_to_rgb(hex_color):
+    hex_color = hex_color.lstrip("#")
+    return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+BACKGROUND_COLOUR_1 = hex_to_rgb('#262626')
+BACKGROUND_COLOUR_1 = hex_to_rgb('#272932')
+BBLUE = hex_to_rgb('#75b6c6')
+NEW = hex_to_rgb('#114b5f')
  
 pygame.init()
  
@@ -103,7 +111,7 @@ class Board():
         self.board_width = self.board_height
         for i in range(0, 8):
             for j in range(0, 8):
-                pygame.draw.rect(screen, BLACK if ((i+1) % 2 == 0 and (j+1) % 2 != 0) or ((i+1) % 2 != 0 and (j+1)%2==0) else WHITE,
+                pygame.draw.rect(screen, BBLUE if ((i+1) % 2 == 0 and (j+1) % 2 != 0) or ((i+1) % 2 != 0 and (j+1)%2==0) else WHITE,
                             (current_size[0]*0.05+(i*self.box_dimen), 0.15*current_size[1]+(j*self.box_dimen), self.box_dimen, self.box_dimen))
         for y in range(0, 8):
             for x in range(0, 8):
@@ -191,56 +199,107 @@ class Board():
 
 
     def isInCheck(self):
-        white_pieces = [(y, index_x, index_y) for index_x, x in enumerate(self.board) for index_y, y in enumerate(x) if y != "" and y[0] == "w" and (abs(self.black_king[0]-index_x) == abs(self.black_king[1]-index_y) or (self.black_king[0]==index_x and self.black_king[1] != index_x) or (self.black_king[1]==index_y and self.black_king[0] != index_x))]
-        black_pieces = [(y, index_x, index_y) for index_x, x in enumerate(self.board) for index_y, y in enumerate(x) if y != "" and y[0] == "b" and (abs(self.white_king[0]-index_x) == abs(self.white_king[1]-index_y) or (self.white_king[0]==index_x and self.white_king[1] != index_x) or (self.white_king[1]==index_y and self.white_king[0] != index_x))]
-        for x in white_pieces:
+        white_pieces = [(y, index_x, index_y) for index_x, x in enumerate(self.board) for index_y, y in enumerate(x) if y != "" and y[0] == "w" and (abs(self.black_king[0]-index_x) == abs(self.black_king[1]-index_y) or (self.black_king[0]==index_x and self.black_king[1] != index_x) or (self.black_king[1]==index_y and self.black_king[0] != index_x) or (abs(self.black_king[0]-index_x) == 2 and abs(self.black_king[1]-index_y) == 1) or (abs(self.black_king[0]-index_x) == 1 and abs(self.black_king[1]-index_y) == 2))]
+        black_pieces = [(y, index_x, index_y) for index_x, x in enumerate(self.board) for index_y, y in enumerate(x) if y != "" and y[0] == "b" and (abs(self.white_king[0]-index_x) == abs(self.white_king[1]-index_y) or (self.white_king[0]==index_x and self.white_king[1] != index_x) or (self.white_king[1]==index_y and self.white_king[0] != index_x) or (abs(self.white_king[0]-index_x) == 2 and abs(self.white_king[1]-index_y) == 1) or (abs(self.white_king[0]-index_x) == 1 and abs(self.white_king[1]-index_y) == 2))]
+        white_pieces_list = []
+        #print(white_pieces)
+        for x in range(0, len(white_pieces)):
             #if (x[0] == self.black_king[0] and x[1] != self.black_king[1]) or (x[0] != self.black_king[0] and x[1] == self.black_king[1]): 
-                if self.isValidMove(x[0], (x[1], x[2]), (self.black_king[0], self.black_king[1])) == True:
-                    return True, "BLACK"
+                print(white_pieces[x])
+                if self.isValidMove(white_pieces[x][0], (white_pieces[x][1], white_pieces[x][2]), (self.black_king[0], self.black_king[1])) == True:
+                    white_pieces_list.append((white_pieces[x][1], white_pieces[x][2]))
+        if len(white_pieces_list) > 0:
+            return ("BLACK", white_pieces)
+        black_pieces_list = []
         for x in black_pieces:
             #if (x[0] == self.white_king[0] and x[1] != self.white_king[1]) or (x[0] != self.white_king[0] and x[1] == self.white_king[1]): 
                 if self.isValidMove(x[0], (x[1], x[2]), (self.white_king[0], self.white_king[1])) == True:
-                    return True, "WHITE"
-        return False
+                    black_pieces_list.append((x[1], x[2]))
+        if len(black_pieces_list) > 0:
+            return ("WHITE", black_pieces_list)
+        return (False, "")
     
-    def isCheckmate(self, COLOUR):
+    def isCheckmate(self, COLOUR, checking_pieces):
         king = (deepcopy(self.white_king), 'wk') if COLOUR == "WHITE" else (deepcopy(self.black_king), 'bk')
+        condition_1, condition_2, condition_3 = False, False, False
+        # Condition 1 - Can the king escape check by moving to an adjacent square.
         for row in range(-1, 2):
             for column in range(-1, 2):
-                print("H")
                 if (0 > row+king[0][0] or row+king[0][0] > 7 or 0 > column+king[0][1] or column+king[0][1] > 7) == False:
-                    print("HELLOFF")
                     if self.isValidMove('bk', king[0], [king[0][0]+row, king[0][1]+column]):
-                            print("HE")
                             self.black_king = [king[0][0]+row, king[0][1]+column]
-                            if self.isInCheck() == (True, "BLACK"):
+                            if self.isInCheck()[0] == True:
                                 ...
-                                print("HA")
                             else: 
-                                print("HAE")
                                 self.black_king = [king[0][0], king[0][1]]
                                 print(self.black_king)
-                                return False
+                                condition_1 = True
+                            
+        # Condition 2 - Can the checking piece be captured?
+        if len(checking_pieces) == 1:
+            if COLOUR == "WHITE":
+                black_pieces = [(y, index_x, index_y) for index_x, x in enumerate(self.board) for index_y, y in enumerate(x) if y != "" and y[0] == "b"]
+                for x in black_pieces:
+                    print(checking_pieces)
+                    if self.isValidMove(x[0], (x[1], x[2]), (checking_pieces[0][0], checking_pieces[0][1])):
+                        condition_2 = True
+            elif COLOUR == "BLACK":
+                white_pieces = [(y, index_x, index_y) for index_x, x in enumerate(self.board) for index_y, y in enumerate(x) if y != "" and y[0] == "w"]
+                for x in white_pieces:
+                    if self.isValidMove(x[0], (x[1], x[2]), (checking_pieces[0][0], checking_pieces[0][1])):
+                        condition_2 = True
+            else:
+                raise Exception
+        else:
+            ...
+
+        # Condition 3 - Can the check be blocked by another piece
+        if len(checking_pieces) == 1:
+            positions = self.isValidDiagRow(king[0][0], king[0][1], checking_pieces[0][0], checking_pieces[0][1], optional_return_positions=True)
+            black_pieces = [(y, index_x, index_y) for index_x, x in enumerate(self.board) for index_y, y in enumerate(x) if y != "" and y[0] == "b"]
+            white_pieces = [(y, index_x, index_y) for index_x, x in enumerate(self.board) for index_y, y in enumerate(x) if y != "" and y[0] == "w"]
+            if COLOUR == "WHITE":
+                for x in white_pieces:
+                    for j in positions:
+                        if self.isValidMove(x[0], (x[1], x[2]), (j[0], j[1])):
+                            condition_3 = True
+            elif COLOUR == "BLACK":
+                for x in black_pieces:
+                    for j in positions:
+                        if self.isValidMove(x[0], (x[1], x[2]), (j[0], j[1])):
+                            condition_3 = True
+            else:
+                raise Exception
+
+        else:
+            ...
+        
         self.black_king = [king[0][0], king[0][1]]
-        print("HELLO")
+        if condition_1 or condition_2 or condition_3:
+            return False
         return True
         
     
-    def isValidDiagRow(self, piece_row, piece_column, end_row, end_column):
+    def isValidDiagRow(self, piece_row, piece_column, end_row, end_column, optional_return_positions=False):
         #Checking for the type of validation we will have to perform. rr/c stands for the step in the corresponding column/row
         rr = -1 if (piece_row - end_row) > 0 else 1
         rc = -1 if (piece_column - end_column) > 0 else 1
         iterAmount = piece_row-end_row
+        optional_positions = []
         if end_column == piece_column:
             rc = 0
         elif end_row == piece_row:
             rr = 0
             iterAmount = piece_column-end_column
         for i in range(0, abs(iterAmount)-1):
+            optional_positions.append((piece_row, piece_column))
             piece_row = piece_row + rr
             piece_column = piece_column + rc
             if self.board[piece_row][piece_column] != "":
-                return False
+                if optional_return_positions != True:
+                    return False
+        if optional_return_positions == True:
+            return optional_positions
         return True
 
                    
@@ -268,14 +327,8 @@ class Game():
         #return the result of the game
         return f"Hello"
 
-def hex_to_rgb(hex_color):
-    hex_color = hex_color.lstrip("#")
-    return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
-
 newGame = Game()
 newGame.startGame()
-
-BACKGROUND_COLOUR_1 = hex_to_rgb('#262626')
 
 fullscreen = False
 
@@ -291,6 +344,11 @@ font_color = (255, 255, 255)
 
 
 font = pygame.font.Font(font_name, font_size)
+
+"""
+Text rendering
+"""
+
 ###
 game_name = "CHESS"
 text_surface = font.render(game_name, True, font_color)
@@ -369,17 +427,21 @@ while not done:
         screen.blit(text_surface, game_name_rect)
     elif current_state == GAME_SCREEN:
         #print(board.isInCheck())
-        if board.isInCheck() == (True, "BLACK"):
-            if board.isCheckmate("BLACK"):
+        print(board.isInCheck())
+        if (board.isInCheck())[0] == "BLACK":
+            if board.isCheckmate("BLACK", board.isInCheck()[1]):
                 print("CHECKMATE!!")
             else:
                 print("BLACK KING IS IN CHECK")
-        if board.isInCheck() == (True, "WHITE"):
-            print("WHITE IS IN CHECK")
+        if board.isInCheck()[0] == "WHITE":
+            if board.isCheckmate("WHITE", board.isInCheck()[1]):
+                print("WHITE IS IN CHECKMATE!!")
+            else:
+                print("WHITE IS IN CHECK")
         board.drawBoard(screen)
         ### DRAW THE BOARD
-        box1 = pygame.draw.rect(screen, BLACK, (board.board_x-current_size[0]*0.025, current_size[1]*0.025, (current_size[1]*0.7//8)*8+current_size[0]*0.05, current_size[1]*0.1))
-        box2 = pygame.draw.rect(screen, BLACK, (board.board_x-current_size[0]*0.025, current_size[1]*0.87, (current_size[1]*0.7)//8*8+current_size[0]*0.05, current_size[1]*0.1))
+        box1 = pygame.draw.rect(screen, NEW, (board.board_x-current_size[0]*0.025, current_size[1]*0.025, (current_size[1]*0.7//8)*8+current_size[0]*0.05, current_size[1]*0.1))
+        box2 = pygame.draw.rect(screen, NEW, (board.board_x-current_size[0]*0.025, current_size[1]*0.87, (current_size[1]*0.7)//8*8+current_size[0]*0.05, current_size[1]*0.1))
     
         #Timer
         if int(time.time() - newGame.startTime) > newGame.lastTime:
