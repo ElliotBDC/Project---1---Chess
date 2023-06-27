@@ -2,34 +2,42 @@ import pygame
 import time
 from copy import deepcopy
 
-#Colours (pygame requires them to be in binary representation)
+# Declaring colours in binary format
+
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
-#For the chess board
 GREEN = (118,150,86)
 
 def hex_to_rgb(hex_color):
     hex_color = hex_color.lstrip("#")
     return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+
 BACKGROUND_COLOUR_1 = hex_to_rgb('#262626')
 BACKGROUND_COLOUR_1 = hex_to_rgb('#272932')
 BBLUE = hex_to_rgb('#75b6c6')
 NEW = hex_to_rgb('#114b5f')
  
+# Setting up the screen, etc via Pygame
+
 pygame.init()
- 
-#Declaring the screen size
+
 screen_size = pygame.display.Info()
 screen_width = screen_size.current_w
 screen_height = screen_size.current_h
 current_size = (screen_width*0.5,  screen_height*0.5)
 screen = pygame.display.set_mode(current_size)
 pygame.display.set_caption("Chess")
-
 done = False
-
 clock = pygame.time.Clock()
+
+# Loading images of the chess pieces
+
+"""
+wp = [colour, piece]
+e.g wp = [white, pawn] hence -> wp
+"""
+
 wp = pygame.image.load("images/wp.png")
 wr = pygame.image.load("images/wr.png")
 wb = pygame.image.load("images/wb.png")
@@ -59,7 +67,7 @@ images = [
     ['bk', bk]
 ]
 
-classic_board = board = [
+classic_board = [
     ['br', 'bn', 'bb', 'bq', 'bk', 'bb', 'bn', 'br'],
     ['bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'bp'],
     ['', '', '', '', '', '', '', ''],
@@ -70,6 +78,8 @@ classic_board = board = [
     ['wr', 'wn', 'wb', 'wq', 'wk', 'wb', 'wn', 'wr']
     ]
 
+# Formats the time in seconds to a minutes:seconds representation
+
 def secondsToTime(seconds):
     minutes = seconds // 60
     secondsLeft = seconds - (minutes*60)
@@ -79,6 +89,7 @@ def secondsToTime(seconds):
         secondsLeft = "0" + str(secondsLeft)
     return (f"{minutes}:{secondsLeft}")
 
+# Declaring the class for the chess board (functionality & design)
 
 class Board():
     board_x = current_size[0]*0.05
@@ -99,7 +110,7 @@ class Board():
     ['wp', 'wp', 'wp', 'wp', 'wp', 'wp', 'wp', 'wp'],
     ['wr', 'wn', 'wb', 'wq', 'wk', 'wb', 'wn', 'wr']
     ]
-   
+
     def __init__(self) -> None:
         pass
 
@@ -132,6 +143,9 @@ class Board():
         if self.board[end_pos[0]][end_pos[1]] != "":
             if piece[0] == self.board[end_pos[0]][end_pos[1]][0]:
                 return False
+        ###TODO moves into check
+        if self.isInCheck()[0] != False:
+            return False
         if piece[1] == "p":
             if piece[0] == "w":
                 if end_pos[1] == piece_pos[1]:
@@ -147,6 +161,7 @@ class Board():
                     if piece_pos[0] - end_pos[0] == 1:
                         if self.board[end_pos[0]][end_pos[1]] != "":
                             return True
+                        
                     return False
             else:
                 if end_pos[1] == piece_pos[1]:
@@ -201,49 +216,58 @@ class Board():
         white_pieces = [(y, index_x, index_y) for index_x, x in enumerate(self.board) for index_y, y in enumerate(x) if y != "" and y[0] == "w" and (abs(self.black_king[0]-index_x) == abs(self.black_king[1]-index_y) or (self.black_king[0]==index_x and self.black_king[1] != index_x) or (self.black_king[1]==index_y and self.black_king[0] != index_x) or (abs(self.black_king[0]-index_x) == 2 and abs(self.black_king[1]-index_y) == 1) or (abs(self.black_king[0]-index_x) == 1 and abs(self.black_king[1]-index_y) == 2))]
         black_pieces = [(y, index_x, index_y) for index_x, x in enumerate(self.board) for index_y, y in enumerate(x) if y != "" and y[0] == "b" and (abs(self.white_king[0]-index_x) == abs(self.white_king[1]-index_y) or (self.white_king[0]==index_x and self.white_king[1] != index_x) or (self.white_king[1]==index_y and self.white_king[0] != index_x) or (abs(self.white_king[0]-index_x) == 2 and abs(self.white_king[1]-index_y) == 1) or (abs(self.white_king[0]-index_x) == 1 and abs(self.white_king[1]-index_y) == 2))]
         white_pieces_list = []
-        #print(white_pieces)
         for x in range(0, len(white_pieces)):
-            #if (x[0] == self.black_king[0] and x[1] != self.black_king[1]) or (x[0] != self.black_king[0] and x[1] == self.black_king[1]): 
-                print(white_pieces[x])
-                if self.isValidMove(white_pieces[x][0], (white_pieces[x][1], white_pieces[x][2]), (self.black_king[0], self.black_king[1])) == True:
-                    white_pieces_list.append((white_pieces[x][1], white_pieces[x][2]))
+            if self.isValidMove(white_pieces[x][0], (white_pieces[x][1], white_pieces[x][2]), (self.black_king[0], self.black_king[1])) == True:
+                white_pieces_list.append((white_pieces[x][1], white_pieces[x][2]))
         if len(white_pieces_list) > 0:
-            return ("BLACK", white_pieces)
+            print("BLACK CHECK & WHITE PIECES LIST: " + str(white_pieces_list))
+            return ("BLACK", white_pieces_list)
         black_pieces_list = []
         for x in black_pieces:
-            #if (x[0] == self.white_king[0] and x[1] != self.white_king[1]) or (x[0] != self.white_king[0] and x[1] == self.white_king[1]): 
-                if self.isValidMove(x[0], (x[1], x[2]), (self.white_king[0], self.white_king[1])) == True:
-                    black_pieces_list.append((x[1], x[2]))
+            if self.isValidMove(x[0], (x[1], x[2]), (self.white_king[0], self.white_king[1])) == True:
+                black_pieces_list.append((x[1], x[2]))
         if len(black_pieces_list) > 0:
+            print("WHITE CHECK & LIST OF BLACK PIECES: " + str(black_pieces_list))
             return ("WHITE", black_pieces_list)
         return (False, "")
     
     def isCheckmate(self, COLOUR, checking_pieces):
         king = (deepcopy(self.white_king), 'wk') if COLOUR == "WHITE" else (deepcopy(self.black_king), 'bk')
         condition_1, condition_2, condition_3 = False, False, False
+
         # Condition 1 - Can the king escape check by moving to an adjacent square.
         for row in range(-1, 2):
             for column in range(-1, 2):
                 if (0 > row+king[0][0] or row+king[0][0] > 7 or 0 > column+king[0][1] or column+king[0][1] > 7) == False:
-                    if self.isValidMove('bk', king[0], [king[0][0]+row, king[0][1]+column]):
-                            self.black_king = [king[0][0]+row, king[0][1]+column]
-                            if self.isInCheck()[0] == True:
-                                ...
-                            else: 
-                                self.black_king = [king[0][0], king[0][1]]
-                                print(self.black_king)
-                                condition_1 = True
+                    if king[1] == "bk":
+                            if self.isValidMove('bk', king[0], [king[0][0]+row, king[0][1]+column]):
+                                    self.black_king = [king[0][0]+row, king[0][1]+column]
+                                    if self.isInCheck()[0] == "BLACK":
+                                        ...
+                                    else: 
+                                        print("Square to escape to: " + str((king[0][0]+row, king[0][1]+column)))
+                                        self.black_king = [king[0][0], king[0][1]]
+                                        condition_1 = True
+                    else:
+                            if self.isValidMove('wk', king[0], [king[0][0]+row, king[0][1]+column]):
+                                    self.white_king = [king[0][0]+row, king[0][1]+column]
+                                    if self.isInCheck()[0] == "WHITE":
+                                        ...
+                                    else: 
+                                        print("Square to escape to: " + str((king[0][0]+row, king[0][1]+column)))
+                                        self.white_king = [king[0][0], king[0][1]]
+                                        condition_1 = True
+                
                             
         # Condition 2 - Can the checking piece be captured?
         if len(checking_pieces) == 1:
             if COLOUR == "WHITE":
-                black_pieces = [(y, index_x, index_y) for index_x, x in enumerate(self.board) for index_y, y in enumerate(x) if y != "" and y[0] == "b"]
+                black_pieces = [(y, index_x, index_y) for index_x, x in enumerate(self.board) for index_y, y in enumerate(x) if y != "" and y[0] == "b" and y != "bk"]
                 for x in black_pieces:
-                    print(checking_pieces)
                     if self.isValidMove(x[0], (x[1], x[2]), (checking_pieces[0][0], checking_pieces[0][1])):
                         condition_2 = True
             elif COLOUR == "BLACK":
-                white_pieces = [(y, index_x, index_y) for index_x, x in enumerate(self.board) for index_y, y in enumerate(x) if y != "" and y[0] == "w"]
+                white_pieces = [(y, index_x, index_y) for index_x, x in enumerate(self.board) for index_y, y in enumerate(x) if y != "" and y[0] == "w" and y != "wk"]
                 for x in white_pieces:
                     if self.isValidMove(x[0], (x[1], x[2]), (checking_pieces[0][0], checking_pieces[0][1])):
                         condition_2 = True
@@ -254,9 +278,12 @@ class Board():
 
         # Condition 3 - Can the check be blocked by another piece
         if len(checking_pieces) == 1:
+            #print(checking_pieces)
             positions = self.isValidDiagRow(king[0][0], king[0][1], checking_pieces[0][0], checking_pieces[0][1], optional_return_positions=True)
-            black_pieces = [(y, index_x, index_y) for index_x, x in enumerate(self.board) for index_y, y in enumerate(x) if y != "" and y[0] == "b"]
-            white_pieces = [(y, index_x, index_y) for index_x, x in enumerate(self.board) for index_y, y in enumerate(x) if y != "" and y[0] == "w"]
+            #print(king)
+            #print(positions)
+            black_pieces = [(y, index_x, index_y) for index_x, x in enumerate(self.board) for index_y, y in enumerate(x) if y != "" and y[0] == "b" and y[1] != "k"]
+            white_pieces = [(y, index_x, index_y) for index_x, x in enumerate(self.board) for index_y, y in enumerate(x) if y != "" and y[0] == "w" and y[1] != "k"]
             if COLOUR == "WHITE":
                 for x in white_pieces:
                     for j in positions:
@@ -266,6 +293,7 @@ class Board():
                 for x in black_pieces:
                     for j in positions:
                         if self.isValidMove(x[0], (x[1], x[2]), (j[0], j[1])):
+                            print("Blocking piece: " + str(x))
                             condition_3 = True
             else:
                 raise Exception
@@ -275,6 +303,9 @@ class Board():
         
         self.black_king = [king[0][0], king[0][1]]
         if condition_1 or condition_2 or condition_3:
+            print("Can the king escape via an adjacent square: " + str(condition_1))
+            print("Can he checking piece be captured: " + str(condition_2))
+            print("Can the check be blocked by another piece: " + str(condition_3))
             return False
         return True
         
@@ -301,7 +332,8 @@ class Board():
             return optional_positions
         return True
 
-                   
+# Class for handling games between entitys/players, e.g time management.
+
 class Game():
     player_one_time = 600
     player_two_time = 600
@@ -321,10 +353,9 @@ class Game():
             self.player_two_time = self.player_two_time - 1
         self.lastTime = self.lastTime + 1
             
-
+    # TODO: Return game result
     def __str__(self) -> str:
-        #return the result of the game
-        return f"Hello"
+        return f"TODO"
 
 newGame = Game()
 newGame.startGame()
@@ -344,9 +375,7 @@ font_color = (255, 255, 255)
 
 font = pygame.font.Font(font_name, font_size)
 
-"""
-Text rendering
-"""
+# Section for declaring and rendering text
 
 ###
 game_name = "CHESS"
@@ -362,14 +391,14 @@ screen_player_two_timer = secondsToTime(newGame.player_two_time)
 screen_player_two_timer_text_surface = font.render(screen_player_two_timer, True, WHITE)  # Render the text with black color
 screen_player_two_timer_rect = screen_player_two_timer_text_surface.get_rect()
 
+
+# Board related variables. NOTE: Should aim to integrate these in the board class
+
 hold_click = False
 piece_lock = False
 piece_held = (9, 9, 'nn')
 
 board = Board()
-
-
-
 
 while not done:
     for event in pygame.event.get():
@@ -378,9 +407,9 @@ while not done:
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_TAB:
                 done=True
+
+            # Changing the screen size and ensuring elements change accordingly.
             if event.key == pygame.K_ESCAPE:
-                ### The following code is used to make sure the size of features on the page are changed according to the current
-                ### size of the program
                 if fullscreen:
                     current_size = (screen_width*0.5,  screen_height*0.5)
                     pygame.display.set_mode(current_size)
@@ -390,12 +419,14 @@ while not done:
                     current_size = ((screen_width, screen_height))
                     pygame.display.set_mode(current_size, pygame.FULLSCREEN)
                     fullscreen = True
-
                     game_name_rect.center = (current_size[0] // 2, current_size[1] // 10)
-                ###
-                ###
+            
+            # Resets the board to its original state. NOTE: Should soon aim to integrate into board class
             if event.key == pygame.K_r:
                 board.board = deepcopy(classic_board)
+                board.move = 0
+                board.black_king = [0, 4]
+                board.white_king = [7, 4]
         elif event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
                     current_state = GAME_SCREEN
@@ -426,17 +457,7 @@ while not done:
         screen.blit(text_surface, game_name_rect)
     elif current_state == GAME_SCREEN:
         #print(board.isInCheck())
-        print(board.isInCheck())
-        if (board.isInCheck())[0] == "BLACK":
-            if board.isCheckmate("BLACK", board.isInCheck()[1]):
-                print("CHECKMATE!!")
-            else:
-                print("BLACK KING IS IN CHECK")
-        if board.isInCheck()[0] == "WHITE":
-            if board.isCheckmate("WHITE", board.isInCheck()[1]):
-                print("WHITE IS IN CHECKMATE!!")
-            else:
-                print("WHITE IS IN CHECK")
+        
         board.drawBoard(screen)
         ### DRAW THE BOARD
         box1 = pygame.draw.rect(screen, NEW, (board.board_x-current_size[0]*0.025, current_size[1]*0.025, (current_size[1]*0.7//8)*8+current_size[0]*0.05, current_size[1]*0.1))
@@ -444,8 +465,17 @@ while not done:
     
         #Timer
         if int(time.time() - newGame.startTime) > newGame.lastTime:
-            print("HELLO")
-            print((1 if board.move % 2 == 0 else 2))
+            print(board.isInCheck())
+            if (board.isInCheck())[0] == "BLACK":
+                if board.isCheckmate("BLACK", board.isInCheck()[1]):
+                    print("CHECKMATE!!")
+                else:
+                    print("BLACK KING IS IN CHECK")
+            if board.isInCheck()[0] == "WHITE":
+                if board.isCheckmate("WHITE", board.isInCheck()[1]):
+                    print("WHITE IS IN CHECKMATE!!")
+                else:
+                    print("WHITE IS IN CHECK")
             newGame.updateTimer((1 if board.move % 2 == 0 else 2))
             screen_player_one_timer = secondsToTime(newGame.player_one_time)
             screen_player_one_timer_text_surface = font.render(screen_player_one_timer, True, WHITE)
@@ -456,7 +486,6 @@ while not done:
             screen_player_two_timer_text_surface = font.render(screen_player_two_timer, True, WHITE)
             screen_player_two_timer_rect = screen_player_two_timer_text_surface.get_rect()
             screen_player_two_timer_rect.center = box1.center
-            
         
         
         screen.blit(screen_player_one_timer_text_surface, screen_player_one_timer_rect)
@@ -489,5 +518,5 @@ while not done:
                 except Exception as e:
                     ...
     pygame.display.flip()
-    clock.tick(60)
+    clock.tick(30)
 pygame.quit()
