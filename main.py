@@ -144,8 +144,6 @@ class Board():
             if piece[0] == self.board[end_pos[0]][end_pos[1]][0]:
                 return False
         ###TODO moves into check
-        if self.isInCheck()[0] != False:
-            return False
         if piece[1] == "p":
             if piece[0] == "w":
                 if end_pos[1] == piece_pos[1]:
@@ -160,8 +158,7 @@ class Board():
                 elif end_pos[1] == piece_pos[1]+1 or end_pos[1] == piece_pos[1]-1:
                     if piece_pos[0] - end_pos[0] == 1:
                         if self.board[end_pos[0]][end_pos[1]] != "":
-                            return True
-                        
+                            return True    
                     return False
             else:
                 if end_pos[1] == piece_pos[1]:
@@ -242,12 +239,18 @@ class Board():
                     if king[1] == "bk":
                             if self.isValidMove('bk', king[0], [king[0][0]+row, king[0][1]+column]):
                                     self.black_king = [king[0][0]+row, king[0][1]+column]
+                                    tmp = self.board[king[0][0]+row][king[0][1]+column]
+                                    self.board[king[0][0]][king[0][1]] = ""
+                                    self.board[king[0][0]+row][king[0][1]+column]= "bk"
+                                    print("IS IN CHECK: " + str(self.isInCheck()))
                                     if self.isInCheck()[0] == "BLACK":
                                         ...
                                     else: 
                                         print("Square to escape to: " + str((king[0][0]+row, king[0][1]+column)))
-                                        self.black_king = [king[0][0], king[0][1]]
                                         condition_1 = True
+                                    self.black_king = [king[0][0], king[0][1]]
+                                    self.board[king[0][0]][king[0][1]] = "bk"
+                                    self.board[king[0][0]+row][king[0][1]+column]= tmp
                     else:
                             if self.isValidMove('wk', king[0], [king[0][0]+row, king[0][1]+column]):
                                     self.white_king = [king[0][0]+row, king[0][1]+column]
@@ -278,10 +281,7 @@ class Board():
 
         # Condition 3 - Can the check be blocked by another piece
         if len(checking_pieces) == 1:
-            #print(checking_pieces)
             positions = self.isValidDiagRow(king[0][0], king[0][1], checking_pieces[0][0], checking_pieces[0][1], optional_return_positions=True)
-            #print(king)
-            #print(positions)
             black_pieces = [(y, index_x, index_y) for index_x, x in enumerate(self.board) for index_y, y in enumerate(x) if y != "" and y[0] == "b" and y[1] != "k"]
             white_pieces = [(y, index_x, index_y) for index_x, x in enumerate(self.board) for index_y, y in enumerate(x) if y != "" and y[0] == "w" and y[1] != "k"]
             if COLOUR == "WHITE":
@@ -321,10 +321,11 @@ class Board():
         elif end_row == piece_row:
             rr = 0
             iterAmount = piece_column-end_column
+        #optional_positions.append((piece_row, piece_column))
         for i in range(0, abs(iterAmount)-1):
-            optional_positions.append((piece_row, piece_column))
             piece_row = piece_row + rr
             piece_column = piece_column + rc
+            optional_positions.append((piece_row, piece_column))
             if self.board[piece_row][piece_column] != "":
                 if optional_return_positions != True:
                     return False
@@ -456,8 +457,6 @@ while not done:
     if current_state == HOME_SCREEN:
         screen.blit(text_surface, game_name_rect)
     elif current_state == GAME_SCREEN:
-        #print(board.isInCheck())
-        
         board.drawBoard(screen)
         ### DRAW THE BOARD
         box1 = pygame.draw.rect(screen, NEW, (board.board_x-current_size[0]*0.025, current_size[1]*0.025, (current_size[1]*0.7//8)*8+current_size[0]*0.05, current_size[1]*0.1))
