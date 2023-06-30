@@ -17,7 +17,7 @@ BACKGROUND_COLOUR_1 = hex_to_rgb('#262626')
 BACKGROUND_COLOUR_1 = hex_to_rgb('#272932')
 BBLUE = hex_to_rgb('#75b6c6')
 NEW = hex_to_rgb('#114b5f')
- 
+
 # Setting up the screen, etc via Pygame
 
 pygame.init()
@@ -254,6 +254,12 @@ class Board():
                     else:
                             if self.isValidMove('wk', king[0], [king[0][0]+row, king[0][1]+column]):
                                     self.white_king = [king[0][0]+row, king[0][1]+column]
+
+                                    ### TODO: UPDATE LIKE ABOVE
+
+
+
+
                                     if self.isInCheck()[0] == "WHITE":
                                         ...
                                     else: 
@@ -265,14 +271,16 @@ class Board():
         # Condition 2 - Can the checking piece be captured?
         if len(checking_pieces) == 1:
             if COLOUR == "WHITE":
-                black_pieces = [(y, index_x, index_y) for index_x, x in enumerate(self.board) for index_y, y in enumerate(x) if y != "" and y[0] == "b" and y != "bk"]
+                black_pieces = [(y, index_x, index_y) for index_x, x in enumerate(self.board) for index_y, y in enumerate(x) if y != "" and y[0] == "b"]
                 for x in black_pieces:
                     if self.isValidMove(x[0], (x[1], x[2]), (checking_pieces[0][0], checking_pieces[0][1])):
                         condition_2 = True
             elif COLOUR == "BLACK":
-                white_pieces = [(y, index_x, index_y) for index_x, x in enumerate(self.board) for index_y, y in enumerate(x) if y != "" and y[0] == "w" and y != "wk"]
+                white_pieces = [(y, index_x, index_y) for index_x, x in enumerate(self.board) for index_y, y in enumerate(x) if y != "" and y[0] == "w"]
                 for x in white_pieces:
-                    if self.isValidMove(x[0], (x[1], x[2]), (checking_pieces[0][0], checking_pieces[0][1])):
+                    print(x)
+                    print("Checking pieces: " + str(checking_pieces) + "----- [0]" + str(checking_pieces[0]))
+                    if self.isValidMove(x[0], [x[1], x[2]], [checking_pieces[0][0], checking_pieces[0][1]]):
                         condition_2 = True
             else:
                 raise Exception
@@ -332,6 +340,22 @@ class Board():
         if optional_return_positions == True:
             return optional_positions
         return True
+    
+    def makeMove(self, piece_held, row_clicked, column_clicked):
+        if board.isValidMove(piece_held[2], [piece_held[0], piece_held[1]], [row_clicked, column_clicked]) == True:
+            tmp = self.board[row_clicked][column_clicked]
+            self.board[piece_held[0]][piece_held[1]] = ""
+            self.board[row_clicked][column_clicked] = piece_held[2]
+            if (self.isInCheck()[0] == "BLACK" and self.move % 2 != 0) or (self.isInCheck()[0] == "WHITE" and self.move % 2 == 0):
+                self.board[piece_held[0]][piece_held[1]] = piece_held[2]
+                self.board[row_clicked][column_clicked] = tmp
+            else:
+                if piece_held[2] == "wk":
+                    self.white_king = [row_clicked, column_clicked]
+                elif piece_held[2] == "bk":
+                    self.black_king = [row_clicked, column_clicked]
+                self.move = board.move + 1
+
 
 # Class for handling games between entitys/players, e.g time management.
 
@@ -441,14 +465,17 @@ while not done:
                         if (piece_held[2][0] == "w" and board.move % 2 == 0) or (piece_held[2][0] == "b" and board.move % 2 != 0):
                             column_clicked = int((mouse_pos[0]-board.board_x) // board.box_dimen)
                             row_clicked = int((mouse_pos[1]-board.board_y) // board.box_dimen)
+                            board.makeMove(piece_held, row_clicked, column_clicked)
+                            """
                             if board.isValidMove(piece_held[2], [piece_held[0], piece_held[1]], [row_clicked, column_clicked]) == True:
+                                board.board[piece_held[0]][piece_held[1]] = ""
+                                board.board[row_clicked][column_clicked] = piece_held[2]
                                 if piece_held[2] == "wk":
                                     board.white_king = [row_clicked, column_clicked]
                                 elif piece_held[2] == "bk":
                                     board.black_king = [row_clicked, column_clicked]
-                                board.board[piece_held[0]][piece_held[1]] = ""
-                                board.board[row_clicked][column_clicked] = piece_held[2]
                                 board.move = board.move + 1
+                            """
                 hold_click = False
                 piece_lock = False
                 piece_held = (9, 9, 'nn')
@@ -467,14 +494,10 @@ while not done:
             print(board.isInCheck())
             if (board.isInCheck())[0] == "BLACK":
                 if board.isCheckmate("BLACK", board.isInCheck()[1]):
-                    print("CHECKMATE!!")
-                else:
-                    print("BLACK KING IS IN CHECK")
+                    print("White wins!")
             if board.isInCheck()[0] == "WHITE":
                 if board.isCheckmate("WHITE", board.isInCheck()[1]):
-                    print("WHITE IS IN CHECKMATE!!")
-                else:
-                    print("WHITE IS IN CHECK")
+                    print("Black wins!")
             newGame.updateTimer((1 if board.move % 2 == 0 else 2))
             screen_player_one_timer = secondsToTime(newGame.player_one_time)
             screen_player_one_timer_text_surface = font.render(screen_player_one_timer, True, WHITE)
