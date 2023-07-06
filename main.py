@@ -101,15 +101,20 @@ class Board():
     white_king = [7, 4]
     black_king = [0, 4]
     board = [
-    ['br', 'bn', 'bb', 'bq', 'bk', 'bb', 'bn', 'br'],
+    ['br', '', '', '', 'bk', '', '', 'br'],
     ['bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'bp'],
     ['', '', '', '', '', '', '', ''],
     ['', '', '', '', '', '', '', ''],
     ['', '', '', '', '', '', '', ''],
     ['', '', '', '', '', '', '', ''],
     ['wp', 'wp', 'wp', 'wp', 'wp', 'wp', 'wp', 'wp'],
-    ['wr', 'wn', 'wb', 'wq', 'wk', 'wb', 'wn', 'wr']
+    ['wr', '', '', '', 'wk', '', '', 'wr']
     ]
+    moves = []
+    promotion_list = ['q', 'r', 'n', 'b']
+    white_king_moved = False
+    black_king_moved = False
+    rooks_moved = [False, False, False, False]
 
     def __init__(self) -> None:
         pass
@@ -136,18 +141,17 @@ class Board():
                             piece_rect.center = (current_size[0]*0.05+(x*self.box_dimen)+(0.5*self.box_dimen), 0.15*current_size[1]+(y*self.box_dimen)+(0.5*self.box_dimen))
                             screen.blit(new_piece, piece_rect)
 
-    def isValidMove(self, piece, piece_pos, end_pos):
+    def isValidMove(self, piece, piece_pos, end_pos, optional_enpassant=False):
         #Checking to make sure program doesnt accidentally count the user placing the piece back on the same square as a move
         if (piece_pos[0], piece_pos[1]) == (end_pos[0], end_pos[1]):
             return False
         if self.board[end_pos[0]][end_pos[1]] != "":
             if piece[0] == self.board[end_pos[0]][end_pos[1]][0]:
                 return False
-        ###TODO moves into check
         if piece[1] == "p":
             if piece[0] == "w":
                 if end_pos[1] == piece_pos[1]:
-                    if piece_pos[0] - end_pos[0] == 2 and piece_pos[0] == 6:
+                    if abs(piece_pos[0] - end_pos[0]) == 2 and piece_pos[0] == 6:
                         if self.board[end_pos[0]][end_pos[1]] != "" or self.board[end_pos[0]+1][end_pos[1]] != "":
                             return False
                         return True
@@ -156,13 +160,18 @@ class Board():
                             return False
                         return True
                 elif end_pos[1] == piece_pos[1]+1 or end_pos[1] == piece_pos[1]-1:
-                    if piece_pos[0] - end_pos[0] == 1:
+                    if abs(piece_pos[0] - end_pos[0]) == 1:
                         if self.board[end_pos[0]][end_pos[1]] != "":
-                            return True    
+                            return True
+                        if end_pos[0] == 2 and self.moves[-1][1] == "bp" and self.moves[-1][2][0] == 3 and (self.moves[-1][2][1] == piece_pos[1]+1 or self.moves[-1][2][1] == piece_pos[1]-1):
+                            if optional_enpassant == True:
+                                return None
+                            return True
                     return False
+                return False
             else:
                 if end_pos[1] == piece_pos[1]:
-                    if piece_pos[0] - end_pos[0] == -2 and piece_pos[0]==1:
+                    if abs(piece_pos[0] - end_pos[0]) == 2 and piece_pos[0]==1:
                         if self.board[end_pos[0]][end_pos[1]] != "" or self.board[end_pos[0]-1][end_pos[1]] != "":
                             return False
                         return True
@@ -174,11 +183,17 @@ class Board():
                     if piece_pos[0] - end_pos[0] == -1:
                         if self.board[end_pos[0]][end_pos[1]] != "":
                             return True
+                        if end_pos[0] == 5 and self.moves[-1][1] == "wp" and self.moves[-1][2][0] == 4 and (self.moves[-1][2][1] == piece_pos[1]+1 or self.moves[-1][2][1] == piece_pos[1]-1):
+                            if optional_enpassant == True:
+                                return None
+                            return True
                     return False
+                return False
         if piece[1] == "b":
             #Check for diagonal
             if abs(end_pos[0]-piece_pos[0]) == abs(end_pos[1]-piece_pos[1]):
                 return self.isValidDiagRow(piece_pos[0], piece_pos[1], end_pos[0], end_pos[1])
+            return False
         if piece[1] == "n":
             if abs(end_pos[0]-piece_pos[0]) == 2 and abs(end_pos[1]-piece_pos[1]) == 1:
                 return True
@@ -190,6 +205,7 @@ class Board():
                 return self.isValidDiagRow(piece_pos[0], piece_pos[1], end_pos[0], end_pos[1])
             elif piece_pos[0] != end_pos[0] and piece_pos[1] == end_pos[1]:
                 return self.isValidDiagRow(piece_pos[0], piece_pos[1], end_pos[0], end_pos[1])
+            return False
         if piece[1] == "k":
             if abs(end_pos[0]-piece_pos[0]) == abs(end_pos[1]-piece_pos[1]):
                 if (abs(end_pos[0]-piece_pos[0]) == 1 and abs(end_pos[1]-piece_pos[1]) == 1):
@@ -198,6 +214,16 @@ class Board():
                 return True 
             elif (end_pos[1]==piece_pos[1]+1 or end_pos[1]==piece_pos[1]-1) and end_pos[0]==piece_pos[0]:
                 return True
+            if piece[0] == "w":
+                if self.white_king_moved == False:
+                    if (end_pos[1] == 2 and self.rooks_moved[0] == False) or (end_pos[1] == 6 and self.rooks_moved[1] == False):
+                        if self.isCheckWhileMoving(self.white_king, end_pos, -1 if end_pos[1] - piece_pos[1] > 0 else 1, "WHITE"):
+                            return None
+            else:
+                if self.black_king_moved == False:
+                    if (end_pos[1] == 2 and self.rooks_moved[2] == False) or (end_pos[1] == 6 and self.rooks_moved[3] == False):
+                        if self.isCheckWhileMoving(self.black_king, end_pos, -1 if end_pos[1] - piece_pos[1] > 0 else 1, "BLACK"):
+                            return None
             return False
         if piece[1] == "q":
             if piece_pos[0] == end_pos[0] and piece_pos[1] != end_pos[1]:
@@ -207,6 +233,17 @@ class Board():
             elif abs(end_pos[0]-piece_pos[0]) == abs(end_pos[1]-piece_pos[1]):
                 return self.isValidDiagRow(piece_pos[0], piece_pos[1], end_pos[0], end_pos[1])
             return False
+        return False
+        
+    def isCheckWhileMoving(self, start_pos, end_pos, direction, COLOUR):
+        choice = "wk" if COLOUR == "WHITE" else "bk"
+        print(choice)
+        for i in range(0, abs(end_pos[1]-start_pos[1])):
+            if self.makeMove((start_pos[0], start_pos[1], choice), start_pos[0], start_pos[1]+(i*direction), True) != True:
+                print(end_pos)
+                return False
+        return True
+     
 
 
     def isInCheck(self):
@@ -269,7 +306,7 @@ class Board():
                     #if self.isValidMove(x[0], [x[1], x[2]], [checking_pieces[0][0], checking_pieces[0][1]]):
                     if self.makeMove(x, checking_pieces[0][0], checking_pieces[0][1], True):
                         condition_2 = True
-                        print("CAN BE CAPTURED BY: " + x)   
+                        print("CAN BE CAPTURED BY: " + str(x))   
                         """
                         tmp = self.board[checking_pieces[0][0]][checking_pieces[0][1]]
                         self.board[x[1]][x[2]] = ""
@@ -285,7 +322,7 @@ class Board():
                 for x in black_pieces:
                     if self.makeMove(x, checking_pieces[0][0], checking_pieces[0][1], True):
                         condition_2 = True
-                        print("CAN BE CAPTURED BY: " + x)
+                        print("CAN BE CAPTURED BY: " + str(x))
                     """
                     if self.isValidMove(x[0], (x[1], x[2]), (checking_pieces[0][0], checking_pieces[0][1])):
                         tmp = self.board[checking_pieces[0][0]][checking_pieces[0][1]]
@@ -298,8 +335,6 @@ class Board():
                     """
             else:
                 raise Exception
-        else:
-            ...
 
         # Condition 3 - Can the check be blocked by another piece
         if len(checking_pieces) == 1:
@@ -343,7 +378,6 @@ class Board():
         elif end_row == piece_row:
             rr = 0
             iterAmount = piece_column-end_column
-        #optional_positions.append((piece_row, piece_column))
         for i in range(0, abs(iterAmount)-1):
             piece_row = piece_row + rr
             piece_column = piece_column + rc
@@ -355,8 +389,14 @@ class Board():
             return optional_positions
         return True
     
+
+    
+    
+    #Optional return means no change is made 
     def makeMove(self, piece_held, row_clicked, column_clicked, optional_return=False):
-        if board.isValidMove(piece_held[2], [piece_held[0], piece_held[1]], [row_clicked, column_clicked]) == True:
+        boolean_validMove = self.isValidMove(piece_held[2], [piece_held[0], piece_held[1]], [row_clicked, column_clicked], optional_enpassant=True)
+        if boolean_validMove == True:
+            print("IS VALID MOVE YES: " + str(piece_held[2]))
             tmp = self.board[row_clicked][column_clicked]
             self.board[piece_held[0]][piece_held[1]] = ""
             self.board[row_clicked][column_clicked] = piece_held[2]
@@ -365,7 +405,7 @@ class Board():
                     self.white_king =  [row_clicked, column_clicked]
                 else:
                     self.black_king = [row_clicked, column_clicked]
-            if (self.isInCheck()[0] == "BLACK" and self.move % 2 != 0) or (self.isInCheck()[0] == "WHITE" and self.move % 2 == 0) or optional_return == True:
+            if (self.isInCheck()[0] == "BLACK" and self.move % 2 != 0) or (self.isInCheck()[0] == "WHITE" and self.move % 2 == 0):
                 self.board[piece_held[0]][piece_held[1]] = piece_held[2]
                 self.board[row_clicked][column_clicked] = tmp
                 if piece_held[2][1] == "k":
@@ -375,16 +415,105 @@ class Board():
                         self.black_king = [piece_held[0], piece_held[1]]
                 if optional_return == True:
                     return False
-            elif ((self.isInCheck()[0] == "BLACK" and self.move % 2 != 0) or (self.isInCheck()[0] == "WHITE" and self.move % 2 == 0)) == False:
+            else: #elif ((self.isInCheck()[0] == "BLACK" and self.move % 2 != 0) or (self.isInCheck()[0] == "WHITE" and self.move % 2 == 0)) == False:
+                if optional_return == True:
+                    self.board[piece_held[0]][piece_held[1]] = piece_held[2]
+                    self.board[row_clicked][column_clicked] = tmp
+                    if piece_held[2][1] == "k":
+                        if piece_held[2][0] == "w":
+                            self.white_king = [piece_held[0], piece_held[1]]
+                        else:
+                            self.black_king = [piece_held[0], piece_held[1]]
+                    return True
                 if piece_held[2] == "wk":
                     self.white_king = [row_clicked, column_clicked]
+                    self.white_king_moved = True
                 elif piece_held[2] == "bk":
                     self.black_king = [row_clicked, column_clicked]
+                    self.black_king_moved = True
+                elif piece_held[2] == "wr":
+                    if piece_held[1] == 0:
+                        self.rooks_moved[0] = True
+                    else:
+                        self.rooks_moved[1] = True
+                    print(self.rooks_moved)
+                elif piece_held[2] == "br":
+                    if piece_held[1] == 2:
+                        self.rooks_moved[2] = True
+                    else:
+                        self.rooks_moved[3] = True
+                    print(self.rooks_moved)
+                self.moves.append([board.move, piece_held[2], [row_clicked, column_clicked]])
                 self.move = board.move + 1
-                if optional_return == True:
-                    return True
-
-
+        elif boolean_validMove == None:
+            if piece_held[2][1] == "p":
+                tmp = self.board[row_clicked][column_clicked]
+                self.board[piece_held[0]][piece_held[1]] = ""
+                self.board[row_clicked][column_clicked] = piece_held[2]
+                tmp2 = self.board[row_clicked-(1 if piece_held[2][0] == "w" else -1)][column_clicked]
+                self.board[row_clicked-(-1 if piece_held[2][0] == "w" else 1)][column_clicked] = ""
+                if (self.isInCheck()[0] == "BLACK" and self.move % 2 != 0) or (self.isInCheck()[0] == "WHITE" and self.move % 2 == 0):
+                    self.board[piece_held[0]][piece_held[1]] = piece_held[2]
+                    self.board[row_clicked][column_clicked] = tmp
+                    self.board[row_clicked-(1 if piece_held[2][0] == "w" else -1)][column_clicked] = tmp2
+                    if optional_return == True:
+                        return False
+                else: #elif ((self.isInCheck()[0] == "BLACK" and self.move % 2 != 0) or (self.isInCheck()[0] == "WHITE" and self.move % 2 == 0)) == False:
+                    if optional_return == True:
+                        self.board[piece_held[0]][piece_held[1]] = piece_held[2]
+                        self.board[row_clicked][column_clicked] = tmp
+                        return True
+                    self.moves.append([board.move, piece_held[2], [row_clicked, column_clicked]])
+                    self.move = board.move + 1
+            elif piece_held[2][1] == "k":
+                tmp = self.board[row_clicked][column_clicked]
+                self.board[piece_held[0]][piece_held[1]] = ""
+                self.board[row_clicked][column_clicked] = piece_held[2]
+                if piece_held[2][1] == "k":
+                    if piece_held[2][0] == "w":
+                        self.white_king =  [row_clicked, column_clicked]
+                    else:
+                        self.black_king = [row_clicked, column_clicked]
+                if (self.isInCheck()[0] == "BLACK" and self.move % 2 != 0) or (self.isInCheck()[0] == "WHITE" and self.move % 2 == 0):
+                    self.board[piece_held[0]][piece_held[1]] = piece_held[2]
+                    self.board[row_clicked][column_clicked] = tmp
+                    if piece_held[2][1] == "k":
+                        if piece_held[2][0] == "w":
+                            self.white_king = [piece_held[0], piece_held[1]]
+                        else:
+                            self.black_king = [piece_held[0], piece_held[1]]
+                    if optional_return == True:
+                        return False
+                else: #elif ((self.isInCheck()[0] == "BLACK" and self.move % 2 != 0) or (self.isInCheck()[0] == "WHITE" and self.move % 2 == 0)) == False:
+                    if optional_return == True:
+                        self.board[piece_held[0]][piece_held[1]] = piece_held[2]
+                        self.board[row_clicked][column_clicked] = tmp
+                        if piece_held[2][1] == "k":
+                            if piece_held[2][0] == "w":
+                                self.white_king = [piece_held[0], piece_held[1]]
+                            else:
+                                self.black_king = [piece_held[0], piece_held[1]]
+                        return True
+                    if piece_held[2] == "wk":
+                        self.white_king = [row_clicked, column_clicked]
+                        if column_clicked == 2:
+                            self.board[7][0] = ""
+                            self.board[7][3] = "wr"
+                        else:
+                            self.board[7][7] = ""
+                            self.board[7][5] = "wr"
+                    elif piece_held[2] == "bk":
+                        self.black_king = [row_clicked, column_clicked]
+                        if column_clicked == 2:
+                            self.board[0][0] = ""
+                            self.board[0][3] = "br"
+                        else:
+                            self.board[0][7] = ""
+                            self.board[0][5] = "br"
+                    self.moves.append([board.move, piece_held[2], [row_clicked, column_clicked]])
+                    self.move = board.move + 1
+        if optional_return == True:
+            return False
 # Class for handling games between entitys/players, e.g time management.
 
 class Game():
@@ -494,6 +623,7 @@ while not done:
                             column_clicked = int((mouse_pos[0]-board.board_x) // board.box_dimen)
                             row_clicked = int((mouse_pos[1]-board.board_y) // board.box_dimen)
                             board.makeMove(piece_held, row_clicked, column_clicked)
+                            print(board.makeMove(piece_held, row_clicked, column_clicked, True))
                             """
                             if board.isValidMove(piece_held[2], [piece_held[0], piece_held[1]], [row_clicked, column_clicked]) == True:
                                 board.board[piece_held[0]][piece_held[1]] = ""
@@ -519,6 +649,7 @@ while not done:
     
         #Timer
         if int(time.time() - newGame.startTime) > newGame.lastTime:
+            """
             print(board.isInCheck())
             if (board.isInCheck())[0] == "BLACK":
                 if board.isCheckmate("BLACK", board.isInCheck()[1]):
@@ -526,7 +657,9 @@ while not done:
             if board.isInCheck()[0] == "WHITE":
                 if board.isCheckmate("WHITE", board.isInCheck()[1]):
                     print("Black wins!")
+                    """
             newGame.updateTimer((1 if board.move % 2 == 0 else 2))
+            
             screen_player_one_timer = secondsToTime(newGame.player_one_time)
             screen_player_one_timer_text_surface = font.render(screen_player_one_timer, True, WHITE)
             screen_player_one_timer_rect = screen_player_one_timer_text_surface.get_rect()
