@@ -14,7 +14,7 @@ def hex_to_rgb(hex_color):
     return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
 
 BACKGROUND_COLOUR_1 = hex_to_rgb('#262626')
-BACKGROUND_COLOUR_1 = hex_to_rgb('#272932')
+#BACKGROUND_COLOUR_1 = hex_to_rgb('#272932')
 BBLUE = hex_to_rgb('#75b6c6')
 NEW = hex_to_rgb('#114b5f')
 
@@ -89,6 +89,10 @@ def secondsToTime(seconds):
         secondsLeft = "0" + str(secondsLeft)
     return (f"{minutes}:{secondsLeft}")
 
+# Variable used when pawn is promoted and player needs to choose replacing piece
+
+choice_making = False
+
 # Declaring the class for the chess board (functionality & design)
 
 class Board():
@@ -102,7 +106,7 @@ class Board():
     black_king = [0, 4]
     board = [
     ['br', '', '', '', 'bk', '', '', 'br'],
-    ['bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'bp'],
+    ['bp', 'bp', 'wp', 'bp', 'bp', 'bp', 'bp', 'bp'],
     ['', '', '', '', '', '', '', ''],
     ['', '', '', '', '', '', '', ''],
     ['', '', '', '', '', '', '', ''],
@@ -112,12 +116,19 @@ class Board():
     ]
     moves = []
     promotion_list = ['q', 'r', 'n', 'b']
+    onscreen_promotion_list = ['bq', 'br', 'bn', 'bb']
     white_king_moved = False
     black_king_moved = False
     rooks_moved = [False, False, False, False]
+    sizeOfPiece = ""
 
     def __init__(self) -> None:
         pass
+
+    def readjustPieces(self):
+        for index, piece in enumerate(images):
+            images[index][1] = pygame.transform.scale(piece[1], ((current_size[1]*0.7)/8.3, (current_size[1]*0.7)/8.3))
+        self.sizeOfPiece = (current_size[1]*0.7)/8.3
 
     def drawBoard(self, screen):
         self.box_dimen = (current_size[1]*0.7) // 8
@@ -136,10 +147,9 @@ class Board():
                         if y == piece_held[0] and x == piece_held[1]:
                             ...
                         else:
-                            new_piece = pygame.transform.scale(piece[1], ((current_size[1]*0.7)/8.3, (current_size[1]*0.7)/8.3))
-                            piece_rect = new_piece.get_rect()
+                            piece_rect = piece[1].get_rect()
                             piece_rect.center = (current_size[0]*0.05+(x*self.box_dimen)+(0.5*self.box_dimen), 0.15*current_size[1]+(y*self.box_dimen)+(0.5*self.box_dimen))
-                            screen.blit(new_piece, piece_rect)
+                            screen.blit(piece[1], piece_rect)
 
     def isValidMove(self, piece, piece_pos, end_pos, optional_enpassant=False):
         #Checking to make sure program doesnt accidentally count the user placing the piece back on the same square as a move
@@ -393,7 +403,7 @@ class Board():
         return True
     
     #Optional return means no change is made 
-    def makeMove(self, piece_held, row_clicked, column_clicked, optional_return=False):
+    def makeMove(self, piece_held, row_clicked, column_clicked, optional_return=False, choice="", AI=False):
         boolean_validMove = self.isValidMove(piece_held[2], [piece_held[0], piece_held[1]], [row_clicked, column_clicked], optional_enpassant=True)
         if boolean_validMove == True:
             print("IS VALID MOVE YES: " + str(piece_held[2]))
@@ -426,6 +436,12 @@ class Board():
                         else:
                             self.black_king = [piece_held[0], piece_held[1]]
                     return True
+                if (piece_held[2] == "wp" and row_clicked == 0) or (piece_held[2] == "bp" and row_clicked == 7):
+                    if AI == False:
+                        global choice_making
+                        choice_making = True
+                    self.board[row_clicked][column_clicked] = str(piece_held[2][0] + choice)
+                    
                 if piece_held[2] == "wk":
                     self.white_king = [row_clicked, column_clicked]
                     self.white_king_moved = True
@@ -581,7 +597,12 @@ hold_click = False
 piece_lock = False
 piece_held = (9, 9, 'nn')
 
+# Check to see if promotions box is made yet
+flag_ismade = False
+
 board = Board()
+board.readjustPieces()
+pieces_rect = []
 
 while not done:
     for event in pygame.event.get():
@@ -593,6 +614,7 @@ while not done:
 
             # Changing the screen size and ensuring elements change accordingly.
             if event.key == pygame.K_ESCAPE:
+                
                 if fullscreen:
                     current_size = (screen_width*0.5,  screen_height*0.5)
                     pygame.display.set_mode(current_size)
@@ -603,7 +625,7 @@ while not done:
                     pygame.display.set_mode(current_size, pygame.FULLSCREEN)
                     fullscreen = True
                     game_name_rect.center = (current_size[0] // 2, current_size[1] // 10)
-            
+                board.readjustPieces()
             # Resets the board to its original state. NOTE: Should soon aim to integrate into board class
             if event.key == pygame.K_r:
                 board.board = deepcopy(classic_board)
@@ -624,7 +646,6 @@ while not done:
                             column_clicked = int((mouse_pos[0]-board.board_x) // board.box_dimen)
                             row_clicked = int((mouse_pos[1]-board.board_y) // board.box_dimen)
                             board.makeMove(piece_held, row_clicked, column_clicked)
-                            print(board.makeMove(piece_held, row_clicked, column_clicked, True))
                             """
                             if board.isValidMove(piece_held[2], [piece_held[0], piece_held[1]], [row_clicked, column_clicked]) == True:
                                 board.board[piece_held[0]][piece_held[1]] = ""
@@ -638,7 +659,14 @@ while not done:
                 hold_click = False
                 piece_lock = False
                 piece_held = (9, 9, 'nn')
-
+        elif choice_making == True:
+            if flag_ismade == True:
+                mouse_pos = pygame.mouse.get_pos()
+                if box3.x < mouse_pos[0] < box3.x+box3.width and box3.y < mouse_pos[1] < box3.y+box3.height:
+                    xpos_mouse = ((((mouse_pos[0]-box3.x-0.5*board.sizeOfPiece)/board.sizeOfPiece)-0.75) // 1)+1
+                    print(xpos_mouse)
+                    #choice_making = False
+                    #flag_ismade = False
     screen.fill(BACKGROUND_COLOUR_1)
     if current_state == HOME_SCREEN:
         screen.blit(text_surface, game_name_rect)
@@ -647,7 +675,20 @@ while not done:
         ### DRAW THE BOARD
         box1 = pygame.draw.rect(screen, NEW, (board.board_x-current_size[0]*0.025, current_size[1]*0.025, (current_size[1]*0.7//8)*8+current_size[0]*0.05, current_size[1]*0.1))
         box2 = pygame.draw.rect(screen, NEW, (board.board_x-current_size[0]*0.025, current_size[1]*0.87, (current_size[1]*0.7)//8*8+current_size[0]*0.05, current_size[1]*0.1))
-    
+        if choice_making == True:
+            box3 = pygame.draw.rect(screen, WHITE, [(board.board_x+0.5*board.board_width)-(2*board.sizeOfPiece)-(2.5*current_size[1]*0.01),
+                                             board.board_y+0.5*board.board_height-(0.5*board.sizeOfPiece) -(2*current_size[1]*0.01), 4*board.sizeOfPiece+(5*current_size[1]*0.01), board.sizeOfPiece+2*current_size[1]*0.01])
+            flag_ismade = True
+            count = 0
+            for piece in images:
+                if piece[0] == board.onscreen_promotion_list[count]:
+                     piece_rect = piece[1].get_rect()
+                     piece_rect.center = [box3.x+(count+0.75)*board.sizeOfPiece, 
+                                          box3.y+0.5*box3.height]
+                     screen.blit(piece[1], piece_rect)
+                     count = count + 1
+                if count == 4:
+                    break
         #Timer
         if int(time.time() - newGame.startTime) > newGame.lastTime:
             """
