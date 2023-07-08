@@ -239,6 +239,10 @@ class Board():
         choice = "wk" if COLOUR == "WHITE" else "bk"
         print(choice)
         for i in range(0, abs(end_pos[1]-start_pos[1])):
+            if i > 0:
+                if self.board[start_pos[0]][start_pos[1]+i*direction] != '':
+                    print(f"NOT EMPTY: [{start_pos[0]}][{start_pos[1]+i*direction}]) +++  {self.board[start_pos[0]][start_pos[1]+i*direction]}" )
+                    return False
             print(f"i: {i}, start: {start_pos[0], start_pos[1]+i*direction}, end: {end_pos}")
             if self.makeMove((start_pos[0], start_pos[1], choice), start_pos[0], start_pos[1]+(i*direction), True) == False:
                 print(f"END POS: {end_pos}, IS IN CHECK: {self.isInCheck()}")
@@ -570,7 +574,6 @@ screen_player_one_timer_rect = screen_player_one_timer_text_surface.get_rect()
 screen_player_two_timer = secondsToTime(newGame.player_two_time)
 screen_player_two_timer_text_surface = font.render(screen_player_two_timer, True, WHITE)  # Render the text with black color
 screen_player_two_timer_rect = screen_player_two_timer_text_surface.get_rect()
-
 
 # Board related variables. NOTE: Should aim to integrate these in the board class
 
