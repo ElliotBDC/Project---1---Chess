@@ -108,7 +108,7 @@ class Board():
     ['', '', '', '', '', '', '', ''],
     ['', '', '', '', '', '', '', ''],
     ['wp', 'wp', 'wp', 'wp', 'wp', 'wp', 'wp', 'wp'],
-    ['wr', '', '', '', 'wk', '', '', 'wr']
+    ['wr', '', '', 'wb', 'wk', '', '', 'wr']
     ]
     moves = []
     promotion_list = ['q', 'r', 'n', 'b']
@@ -217,12 +217,12 @@ class Board():
             if piece[0] == "w":
                 if self.white_king_moved == False:
                     if (end_pos[1] == 2 and self.rooks_moved[0] == False) or (end_pos[1] == 6 and self.rooks_moved[1] == False):
-                        if self.isCheckWhileMoving(self.white_king, end_pos, -1 if end_pos[1] - piece_pos[1] > 0 else 1, "WHITE"):
+                        if self.isCheckWhileMoving(self.white_king, end_pos, 1 if end_pos[1] - piece_pos[1] > 0 else -1, "WHITE"):
                             return None
             else:
                 if self.black_king_moved == False:
                     if (end_pos[1] == 2 and self.rooks_moved[2] == False) or (end_pos[1] == 6 and self.rooks_moved[3] == False):
-                        if self.isCheckWhileMoving(self.black_king, end_pos, -1 if end_pos[1] - piece_pos[1] > 0 else 1, "BLACK"):
+                        if self.isCheckWhileMoving(self.black_king, end_pos, 1 if end_pos[1] - piece_pos[1] > 0 else -1, "BLACK"):
                             return None
             return False
         if piece[1] == "q":
@@ -239,12 +239,11 @@ class Board():
         choice = "wk" if COLOUR == "WHITE" else "bk"
         print(choice)
         for i in range(0, abs(end_pos[1]-start_pos[1])):
-            if self.makeMove((start_pos[0], start_pos[1], choice), start_pos[0], start_pos[1]+(i*direction), True) != True:
-                print(end_pos)
+            print(f"i: {i}, start: {start_pos[0], start_pos[1]+i*direction}, end: {end_pos}")
+            if self.makeMove((start_pos[0], start_pos[1], choice), start_pos[0], start_pos[1]+(i*direction), True) == False:
+                print(f"END POS: {end_pos}, IS IN CHECK: {self.isInCheck()}")
                 return False
         return True
-     
-
 
     def isInCheck(self):
         white_pieces = [(y, index_x, index_y) for index_x, x in enumerate(self.board) for index_y, y in enumerate(x) if y != "" and y[0] == "w" and (abs(self.black_king[0]-index_x) == abs(self.black_king[1]-index_y) or (self.black_king[0]==index_x and self.black_king[1] != index_x) or (self.black_king[1]==index_y and self.black_king[0] != index_x) or (abs(self.black_king[0]-index_x) == 2 and abs(self.black_king[1]-index_y) == 1) or (abs(self.black_king[0]-index_x) == 1 and abs(self.black_king[1]-index_y) == 2))]
@@ -389,9 +388,6 @@ class Board():
             return optional_positions
         return True
     
-
-    
-    
     #Optional return means no change is made 
     def makeMove(self, piece_held, row_clicked, column_clicked, optional_return=False):
         boolean_validMove = self.isValidMove(piece_held[2], [piece_held[0], piece_held[1]], [row_clicked, column_clicked], optional_enpassant=True)
@@ -413,6 +409,7 @@ class Board():
                         self.white_king = [piece_held[0], piece_held[1]]
                     else:
                         self.black_king = [piece_held[0], piece_held[1]]
+                print(f"BLACK IS IN CHECK: [{row_clicked}, {column_clicked}]")
                 if optional_return == True:
                     return False
             else: #elif ((self.isInCheck()[0] == "BLACK" and self.move % 2 != 0) or (self.isInCheck()[0] == "WHITE" and self.move % 2 == 0)) == False:
@@ -445,6 +442,8 @@ class Board():
                     print(self.rooks_moved)
                 self.moves.append([board.move, piece_held[2], [row_clicked, column_clicked]])
                 self.move = board.move + 1
+            if optional_return == True:
+                return False
         elif boolean_validMove == None:
             if piece_held[2][1] == "p":
                 tmp = self.board[row_clicked][column_clicked]
@@ -512,8 +511,7 @@ class Board():
                             self.board[0][5] = "br"
                     self.moves.append([board.move, piece_held[2], [row_clicked, column_clicked]])
                     self.move = board.move + 1
-        if optional_return == True:
-            return False
+
 # Class for handling games between entitys/players, e.g time management.
 
 class Game():
