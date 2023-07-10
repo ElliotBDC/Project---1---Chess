@@ -121,6 +121,7 @@ class Board():
     black_king_moved = False
     rooks_moved = [False, False, False, False]
     sizeOfPiece = ""
+    pawn_promotion_position = []
 
     def __init__(self) -> None:
         pass
@@ -259,30 +260,66 @@ class Board():
                 return False
         return True
 
-    def isInCheck(self):
+    def isInCheck(self, optional_return_both=False):
         white_pieces = [(y, index_x, index_y) for index_x, x in enumerate(self.board) for index_y, y in enumerate(x) if y != "" and y[0] == "w" and (abs(self.black_king[0]-index_x) == abs(self.black_king[1]-index_y) or (self.black_king[0]==index_x and self.black_king[1] != index_x) or (self.black_king[1]==index_y and self.black_king[0] != index_x) or (abs(self.black_king[0]-index_x) == 2 and abs(self.black_king[1]-index_y) == 1) or (abs(self.black_king[0]-index_x) == 1 and abs(self.black_king[1]-index_y) == 2))]
         black_pieces = [(y, index_x, index_y) for index_x, x in enumerate(self.board) for index_y, y in enumerate(x) if y != "" and y[0] == "b" and (abs(self.white_king[0]-index_x) == abs(self.white_king[1]-index_y) or (self.white_king[0]==index_x and self.white_king[1] != index_x) or (self.white_king[1]==index_y and self.white_king[0] != index_x) or (abs(self.white_king[0]-index_x) == 2 and abs(self.white_king[1]-index_y) == 1) or (abs(self.white_king[0]-index_x) == 1 and abs(self.white_king[1]-index_y) == 2))]
         white_pieces_list = []
+        black_check = False
+        white_check = False
         for x in range(0, len(white_pieces)):
             if self.isValidMove(white_pieces[x][0], (white_pieces[x][1], white_pieces[x][2]), (self.black_king[0], self.black_king[1])) == True:
                 white_pieces_list.append((white_pieces[x][1], white_pieces[x][2]))
         if len(white_pieces_list) > 0:
             print("BLACK CHECK & WHITE PIECES LIST: " + str(white_pieces_list))
-            return ("BLACK", white_pieces_list)
+            if optional_return_both == False:
+                return ("BLACK", white_pieces_list)
+            black_check = True
         black_pieces_list = []
         for x in black_pieces:
             if self.isValidMove(x[0], (x[1], x[2]), (self.white_king[0], self.white_king[1])) == True:
                 black_pieces_list.append((x[1], x[2]))
         if len(black_pieces_list) > 0:
             print("WHITE CHECK & LIST OF BLACK PIECES: " + str(black_pieces_list))
+            if optional_return_both == False:
+                return ("WHITE", black_pieces_list)
+            white_check = True
+        if optional_return_both == False:
+            return (False, "")
+        if white_check and black_check:
+            return (2, "")
+        elif white_check:
             return ("WHITE", black_pieces_list)
+        elif black_check:
+            return ("BLACK", white_pieces_list)
         return (False, "")
     
+    # canKingMove() can be used in both checking for CheckMates and StaleMates.
+
+    def canKingMove(self, COLOUR):
+        king = (deepcopy(self.white_king), 'wk') if COLOUR == "WHITE" else (deepcopy(self.black_king), 'bk')
+        for row in range(-1, 2):
+            for column in range(-1, 2):
+                if (0 > row+king[0][0] or row+king[0][0] > 7 or 0 > column+king[0][1] or column+king[0][1] > 7) == False:
+                    if self.isValidMove(king[1], king[0], [king[0][0]+row, king[0][1]+column]):
+                            self.black_king = [king[0][0]+row, king[0][1]+column]
+                            tmp = self.board[king[0][0]+row][king[0][1]+column]
+                            self.board[king[0][0]][king[0][1]] = ""
+                            self.board[king[0][0]+row][king[0][1]+column]= king[1]
+                            if self.isInCheck()[0] != COLOUR:
+                                print("Square to escape to: " + str((king[0][0]+row, king[0][1]+column)))
+                                return True
+                            self.black_king = [king[0][0], king[0][1]]
+                            self.board[king[0][0]][king[0][1]] = king[1]
+                            self.board[king[0][0]+row][king[0][1]+column]= tmp
+        return False
+
     def isCheckmate(self, COLOUR, checking_pieces):
         king = (deepcopy(self.white_king), 'wk') if COLOUR == "WHITE" else (deepcopy(self.black_king), 'bk')
         condition_1, condition_2, condition_3 = False, False, False
 
         # Condition 1 - Can the king escape check by moving to an adjacent square.
+        condition_1 = self.canKingMove(COLOUR)
+        """
         for row in range(-1, 2):
             for column in range(-1, 2):
                 if (0 > row+king[0][0] or row+king[0][0] > 7 or 0 > column+king[0][1] or column+king[0][1] > 7) == False:
@@ -309,7 +346,8 @@ class Board():
                                         condition_1 = True
                                     self.white_king = [king[0][0], king[0][1]]
                                     self.board[king[0][0]][king[0][1]] = "wk"
-                                    self.board[king[0][0]+row][king[0][1]+column]= tmp           
+                                    self.board[king[0][0]+row][king[0][1]+column]= tmp      
+                                    """     
                             
         # Condition 2 - Can the checking piece be captured?
         if len(checking_pieces) == 1:
@@ -402,9 +440,13 @@ class Board():
             return optional_positions
         return True
     
+    def isStalemate(self):
+        ...
+
     #Optional return means no change is made 
     def makeMove(self, piece_held, row_clicked, column_clicked, optional_return=False, choice="", AI=False):
         boolean_validMove = self.isValidMove(piece_held[2], [piece_held[0], piece_held[1]], [row_clicked, column_clicked], optional_enpassant=True)
+        
         if boolean_validMove == True:
             print("IS VALID MOVE YES: " + str(piece_held[2]))
             tmp = self.board[row_clicked][column_clicked]
@@ -415,7 +457,8 @@ class Board():
                     self.white_king =  [row_clicked, column_clicked]
                 else:
                     self.black_king = [row_clicked, column_clicked]
-            if (self.isInCheck()[0] == "BLACK" and self.move % 2 != 0) or (self.isInCheck()[0] == "WHITE" and self.move % 2 == 0):
+            currentCheck = self.isInCheck(optional_return_both=True)[0]
+            if ((currentCheck == "BLACK" and self.move % 2 != 0) or (currentCheck == "WHITE" and self.move % 2 == 0)) or currentCheck == 2:
                 self.board[piece_held[0]][piece_held[1]] = piece_held[2]
                 self.board[row_clicked][column_clicked] = tmp
                 if piece_held[2][1] == "k":
@@ -440,7 +483,9 @@ class Board():
                     if AI == False:
                         global choice_making
                         choice_making = True
-                    self.board[row_clicked][column_clicked] = str(piece_held[2][0] + choice)
+                        self.pawn_promotion_position = [row_clicked,column_clicked]
+                    else:
+                        self.board[row_clicked][column_clicked] = str(piece_held[2][0] + choice)
                     
                 if piece_held[2] == "wk":
                     self.white_king = [row_clicked, column_clicked]
@@ -455,7 +500,7 @@ class Board():
                         self.rooks_moved[1] = True
                     print(self.rooks_moved)
                 elif piece_held[2] == "br":
-                    if piece_held[1] == 2:
+                    if piece_held[1] == 0:
                         self.rooks_moved[2] = True
                     else:
                         self.rooks_moved[3] = True
@@ -638,6 +683,18 @@ while not done:
                 mouse_pos = pygame.mouse.get_pos()
                 if board.board_x+board.board_width > mouse_pos[0] > board.board_x and board.board_y < mouse_pos[1] < board.board_y+board.board_height:
                     hold_click = True
+                if choice_making == True:
+                    if flag_ismade == True:
+                        mouse_pos = pygame.mouse.get_pos()
+                        if box3.x < mouse_pos[0] < box3.x+box3.width and box3.y < mouse_pos[1] < box3.y+box3.height:
+                            xpos_mouse = ((((mouse_pos[0]-box3.x-0.5*board.sizeOfPiece)/board.sizeOfPiece)-0.75) // 1)+1
+                            pawn_pos = board.pawn_promotion_position
+                            if pawn_pos[0] == 0:
+                                board.board[pawn_pos[0]][pawn_pos[1]] = "w" + board.promotion_list[int(xpos_mouse)]
+                            else:
+                                board.board[pawn_pos[0]][pawn_pos[1]] = "b" + board.promotion_list[int(xpos_mouse)]
+                            choice_making = False
+                            flag_ismade = False
         elif event.type == pygame.MOUSEBUTTONUP:
             if hold_click == True:
                 if piece_lock == True:
@@ -659,14 +716,6 @@ while not done:
                 hold_click = False
                 piece_lock = False
                 piece_held = (9, 9, 'nn')
-        elif choice_making == True:
-            if flag_ismade == True:
-                mouse_pos = pygame.mouse.get_pos()
-                if box3.x < mouse_pos[0] < box3.x+box3.width and box3.y < mouse_pos[1] < box3.y+box3.height:
-                    xpos_mouse = ((((mouse_pos[0]-box3.x-0.5*board.sizeOfPiece)/board.sizeOfPiece)-0.75) // 1)+1
-                    print(xpos_mouse)
-                    #choice_making = False
-                    #flag_ismade = False
     screen.fill(BACKGROUND_COLOUR_1)
     if current_state == HOME_SCREEN:
         screen.blit(text_surface, game_name_rect)
@@ -692,7 +741,7 @@ while not done:
         #Timer
         if int(time.time() - newGame.startTime) > newGame.lastTime:
             """
-            print(board.isInCheck())
+            #print(board.isInCheck())
             if (board.isInCheck())[0] == "BLACK":
                 if board.isCheckmate("BLACK", board.isInCheck()[1]):
                     print("White wins!")
