@@ -96,23 +96,26 @@ choice_making = False
 # Declaring the class for the chess board (functionality & design)
 
 class Board():
+    # Display Properties
     board_x = current_size[0]*0.05
     board_y = 0.15*current_size[1]
     board_height = current_size[1]*0.7
     board_width = board_height
     box_dimen = (current_size[1]*0.7) // 8
+
+    #Board 
     move = 0
     white_king = [7, 4]
     black_king = [0, 4]
     board = [
-    ['br', '', '', '', 'bk', '', '', 'br'],
-    ['bp', 'bp', 'wp', 'bp', 'bp', 'bp', 'bp', 'bp'],
     ['', '', '', '', '', '', '', ''],
     ['', '', '', '', '', '', '', ''],
     ['', '', '', '', '', '', '', ''],
+    ['', '', '', 'br', '', '', 'bq', ''],
     ['', '', '', '', '', '', '', ''],
-    ['wp', 'wp', 'wp', 'wp', 'wp', 'wp', 'wp', 'wp'],
-    ['wr', '', '', 'wb', 'wk', '', '', 'wr']
+    ['', '', '', '', '', '', '', ''],
+    ['', '', '', '', '', '', '', ''],
+    ['', '', '', '', 'wk', '', '', '']
     ]
     moves = []
     promotion_list = ['q', 'r', 'n', 'b']
@@ -248,15 +251,11 @@ class Board():
         
     def isCheckWhileMoving(self, start_pos, end_pos, direction, COLOUR):
         choice = "wk" if COLOUR == "WHITE" else "bk"
-        print(choice)
         for i in range(0, abs(end_pos[1]-start_pos[1])):
             if i > 0:
                 if self.board[start_pos[0]][start_pos[1]+i*direction] != '':
-                    print(f"NOT EMPTY: [{start_pos[0]}][{start_pos[1]+i*direction}]) +++  {self.board[start_pos[0]][start_pos[1]+i*direction]}" )
                     return False
-            print(f"i: {i}, start: {start_pos[0], start_pos[1]+i*direction}, end: {end_pos}")
             if self.makeMove((start_pos[0], start_pos[1], choice), start_pos[0], start_pos[1]+(i*direction), True) == False:
-                print(f"END POS: {end_pos}, IS IN CHECK: {self.isInCheck()}")
                 return False
         return True
 
@@ -270,7 +269,6 @@ class Board():
             if self.isValidMove(white_pieces[x][0], (white_pieces[x][1], white_pieces[x][2]), (self.black_king[0], self.black_king[1])) == True:
                 white_pieces_list.append((white_pieces[x][1], white_pieces[x][2]))
         if len(white_pieces_list) > 0:
-            print("BLACK CHECK & WHITE PIECES LIST: " + str(white_pieces_list))
             if optional_return_both == False:
                 return ("BLACK", white_pieces_list)
             black_check = True
@@ -279,7 +277,6 @@ class Board():
             if self.isValidMove(x[0], (x[1], x[2]), (self.white_king[0], self.white_king[1])) == True:
                 black_pieces_list.append((x[1], x[2]))
         if len(black_pieces_list) > 0:
-            print("WHITE CHECK & LIST OF BLACK PIECES: " + str(black_pieces_list))
             if optional_return_both == False:
                 return ("WHITE", black_pieces_list)
             white_check = True
@@ -297,20 +294,28 @@ class Board():
 
     def canKingMove(self, COLOUR):
         king = (deepcopy(self.white_king), 'wk') if COLOUR == "WHITE" else (deepcopy(self.black_king), 'bk')
+        condition = False
         for row in range(-1, 2):
             for column in range(-1, 2):
                 if (0 > row+king[0][0] or row+king[0][0] > 7 or 0 > column+king[0][1] or column+king[0][1] > 7) == False:
                     if self.isValidMove(king[1], king[0], [king[0][0]+row, king[0][1]+column]):
-                            self.black_king = [king[0][0]+row, king[0][1]+column]
+                            if COLOUR == "WHITE":
+                                self.white_king = [king[0][0]+row, king[0][1]+column]
+                            else:
+                                self.black_king = [king[0][0]+row, king[0][1]+column]
                             tmp = self.board[king[0][0]+row][king[0][1]+column]
                             self.board[king[0][0]][king[0][1]] = ""
                             self.board[king[0][0]+row][king[0][1]+column]= king[1]
                             if self.isInCheck()[0] != COLOUR:
-                                print("Square to escape to: " + str((king[0][0]+row, king[0][1]+column)))
-                                return True
-                            self.black_king = [king[0][0], king[0][1]]
+                                condition = True
+                            if COLOUR == "WHITE":
+                                self.white_king = [king[0][0]+row, king[0][1]+column]
+                            else:
+                                self.black_king = [king[0][0], king[0][1]]
                             self.board[king[0][0]][king[0][1]] = king[1]
                             self.board[king[0][0]+row][king[0][1]+column]= tmp
+        if condition == True:
+            return True
         return False
 
     def isCheckmate(self, COLOUR, checking_pieces):
@@ -319,35 +324,6 @@ class Board():
 
         # Condition 1 - Can the king escape check by moving to an adjacent square.
         condition_1 = self.canKingMove(COLOUR)
-        """
-        for row in range(-1, 2):
-            for column in range(-1, 2):
-                if (0 > row+king[0][0] or row+king[0][0] > 7 or 0 > column+king[0][1] or column+king[0][1] > 7) == False:
-                    if king[1] == "bk":
-                            if self.isValidMove('bk', king[0], [king[0][0]+row, king[0][1]+column]):
-                                    self.black_king = [king[0][0]+row, king[0][1]+column]
-                                    tmp = self.board[king[0][0]+row][king[0][1]+column]
-                                    self.board[king[0][0]][king[0][1]] = ""
-                                    self.board[king[0][0]+row][king[0][1]+column]= "bk"
-                                    if self.isInCheck()[0] != "BLACK":
-                                        print("Square to escape to: " + str((king[0][0]+row, king[0][1]+column)))
-                                        condition_1 = True
-                                    self.black_king = [king[0][0], king[0][1]]
-                                    self.board[king[0][0]][king[0][1]] = "bk"
-                                    self.board[king[0][0]+row][king[0][1]+column]= tmp
-                    else:
-                            if self.isValidMove('wk', king[0], [king[0][0]+row, king[0][1]+column]):
-                                    self.white_king = [king[0][0]+row, king[0][1]+column]
-                                    tmp = self.board[king[0][0]+row][king[0][1]+column]
-                                    self.board[king[0][0]][king[0][1]] = ""
-                                    self.board[king[0][0]+row][king[0][1]+column]= "wk"
-                                    if self.isInCheck()[0] != "WHITE":
-                                        print("Square to escape to: " + str((king[0][0]+row, king[0][1]+column)))
-                                        condition_1 = True
-                                    self.white_king = [king[0][0], king[0][1]]
-                                    self.board[king[0][0]][king[0][1]] = "wk"
-                                    self.board[king[0][0]+row][king[0][1]+column]= tmp      
-                                    """     
                             
         # Condition 2 - Can the checking piece be captured?
         if len(checking_pieces) == 1:
@@ -356,36 +332,13 @@ class Board():
                 for x in white_pieces:
                     #if self.isValidMove(x[0], [x[1], x[2]], [checking_pieces[0][0], checking_pieces[0][1]]):
                     if self.makeMove(x, checking_pieces[0][0], checking_pieces[0][1], True):
-                        condition_2 = True
-                        print("CAN BE CAPTURED BY: " + str(x))   
-                        """
-                        tmp = self.board[checking_pieces[0][0]][checking_pieces[0][1]]
-                        self.board[x[1]][x[2]] = ""
-                        self.board[checking_pieces[0][0]][checking_pieces[0][1]] = x[0]
-                        if (self.isInCheck()[0] == "BLACK" and self.move % 2 != 0) or (self.isInCheck()[0] == "WHITE" and self.move % 2 == 0):
-                            condition_2 = True
-                        self.board[x[1]][x[2]] = x[0]
-                        self.board[checking_pieces[0][0]][checking_pieces[0][1]] = tmp
-                        """
+                        condition_2 = True   
                         
             elif COLOUR == "BLACK":
                 black_pieces = [(index_x, index_y, y) for index_x, x in enumerate(self.board) for index_y, y in enumerate(x) if y != "" and y[0] == "b"]
                 for x in black_pieces:
                     if self.makeMove(x, checking_pieces[0][0], checking_pieces[0][1], True):
                         condition_2 = True
-                        print("CAN BE CAPTURED BY: " + str(x))
-                    """
-                    if self.isValidMove(x[0], (x[1], x[2]), (checking_pieces[0][0], checking_pieces[0][1])):
-                        tmp = self.board[checking_pieces[0][0]][checking_pieces[0][1]]
-                        self.board[x[1]][x[2]] = ""
-                        self.board[checking_pieces[0][0]][checking_pieces[0][1]] = x[0]
-                        if (self.isInCheck()[0] == "BLACK" and self.move % 2 != 0) or (self.isInCheck()[0] == "WHITE" and self.move % 2 == 0) != True:
-                            condition_2 = True
-                        self.board[x[1]][x[2]] = x[0]
-                        self.board[checking_pieces[0][0]][checking_pieces[0][1]] = tmp
-                    """
-            else:
-                raise Exception
 
         # Condition 3 - Can the check be blocked by another piece
         if len(checking_pieces) == 1:
@@ -401,19 +354,9 @@ class Board():
                 for x in black_pieces:
                     for j in positions:
                         if self.isValidMove(x[0], (x[1], x[2]), (j[0], j[1])):
-                            print("Blocking piece: " + str(x))
                             condition_3 = True
-            else:
-                raise Exception
-
-        else:
-            ...
         
-        # self.black_king = [king[0][0], king[0][1]]
         if condition_1 or condition_2 or condition_3:
-            print("Can the king escape via an adjacent square: " + str(condition_1))
-            print("Can he checking piece be captured: " + str(condition_2))
-            print("Can the check be blocked by another piece: " + str(condition_3))
             return False
         return True
         
@@ -441,14 +384,31 @@ class Board():
         return True
     
     def isStalemate(self):
-        ...
+        COLOUR = "WHITE" if board.move % 2 == 0 else "BLACK"
+        if self.getAllMoves(COLOUR) == 0:
+            print("IS STALEMATE")
+            return True
+        return False
+    
+    def getAllMoves(self, COLOUR):
+        moves_list = []
+        if COLOUR == "WHITE":
+            white_pieces = [(index_x, index_y, y) for index_x, x in enumerate(self.board) for index_y, y in enumerate(x) if y != "" and y[0] == "w"]
+            for piece in white_pieces:
+                for row in range(0, 8):
+                    for column in range(0, 8):
+                        if self.makeMove(piece, row, column, optional_return=True) == True:
+                            moves_list.append([piece, (row,column)])
+            if len(moves_list) == 0:
+                return 0
+            return moves_list
+                    
+            
 
     #Optional return means no change is made 
     def makeMove(self, piece_held, row_clicked, column_clicked, optional_return=False, choice="", AI=False):
         boolean_validMove = self.isValidMove(piece_held[2], [piece_held[0], piece_held[1]], [row_clicked, column_clicked], optional_enpassant=True)
-        
         if boolean_validMove == True:
-            print("IS VALID MOVE YES: " + str(piece_held[2]))
             tmp = self.board[row_clicked][column_clicked]
             self.board[piece_held[0]][piece_held[1]] = ""
             self.board[row_clicked][column_clicked] = piece_held[2]
@@ -466,7 +426,6 @@ class Board():
                         self.white_king = [piece_held[0], piece_held[1]]
                     else:
                         self.black_king = [piece_held[0], piece_held[1]]
-                print(f"BLACK IS IN CHECK: [{row_clicked}, {column_clicked}]")
                 if optional_return == True:
                     return False
             else: #elif ((self.isInCheck()[0] == "BLACK" and self.move % 2 != 0) or (self.isInCheck()[0] == "WHITE" and self.move % 2 == 0)) == False:
@@ -498,13 +457,11 @@ class Board():
                         self.rooks_moved[0] = True
                     else:
                         self.rooks_moved[1] = True
-                    print(self.rooks_moved)
                 elif piece_held[2] == "br":
                     if piece_held[1] == 0:
                         self.rooks_moved[2] = True
                     else:
                         self.rooks_moved[3] = True
-                    print(self.rooks_moved)
                 self.moves.append([board.move, piece_held[2], [row_clicked, column_clicked]])
                 self.move = board.move + 1
             if optional_return == True:
@@ -721,6 +678,7 @@ while not done:
         screen.blit(text_surface, game_name_rect)
     elif current_state == GAME_SCREEN:
         board.drawBoard(screen)
+        
         ### DRAW THE BOARD
         box1 = pygame.draw.rect(screen, NEW, (board.board_x-current_size[0]*0.025, current_size[1]*0.025, (current_size[1]*0.7//8)*8+current_size[0]*0.05, current_size[1]*0.1))
         box2 = pygame.draw.rect(screen, NEW, (board.board_x-current_size[0]*0.025, current_size[1]*0.87, (current_size[1]*0.7)//8*8+current_size[0]*0.05, current_size[1]*0.1))
@@ -740,6 +698,8 @@ while not done:
                     break
         #Timer
         if int(time.time() - newGame.startTime) > newGame.lastTime:
+            #board.getAllMoves("WHITE")
+            print(board.isStalemate())
             """
             #print(board.isInCheck())
             if (board.isInCheck())[0] == "BLACK":

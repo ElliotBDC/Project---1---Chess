@@ -1,1 +1,0 @@
-while input("Do you want to play Rock, Paper Scissors? [Y/N]: ").lower() == "y": print({2: "WIN", 1: "LOSE", 0: "DRAW", -1: "WIN", -2: "LOSE"}[{"paper": 0, "rock": 1, "scissors": 2}[input("Choose Rock, Paper or Scissors: ").lower()]-{"paper": 0, "rock": 1, "scissors": 2}[(["rock", "paper", "scissors"][int(list(new_set)[0])])]])
