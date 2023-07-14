@@ -124,38 +124,48 @@ def evaluate(board):
     return score
 
 
-def minimax(depth, state):
+def minimax(depth, state, alpha, beta):
         best_move = ""
         if depth == 0:
                 return evaluate(state.board), ""
         if state.move % 2 == 0:
             moves = actions(state)
-            max = float("-inf")
+            mmax = float("-inf")
             if moves == 0:
                 if state.isCheckmate("WHITE", state.isInCheck()[1]):
-                    return float("inf"), ""
+                    print("CHECKMATE DETECTED")
+                    return 99999, ""
                 return 0, ""
             for move in moves:
                 new_state = BBoard(result(deepcopy(state), move), state.move+1)
-                score = minimax(depth-1, new_state)[0]
-                if score > max:
-                    max = score
-                    best_move = move
-            return max, best_move
+                score = minimax(depth-1, new_state, alpha, beta)[0]
+                if score > mmax: 
+                    mmax = score
+                    if depth == original_depth:
+                        best_move = move
+                alpha = max(alpha, score)
+                if beta <= alpha:
+                    break
+            return mmax, best_move
         else:
             moves = actions(state)
-            min = float("inf")
+            mmin = float("inf")
             if moves == 0:
                 if state.isCheckmate("BLACK", state.isInCheck()[1]):
-                    return float("-inf"), " "
-                return 0, " "
+                    print("CHECKMATE DETECTED")
+                    return -99999, ""
+                return 0, ""
             for move in moves:
                 new_state = BBoard(result(deepcopy(state), move), state.move+1)
-                score = minimax(depth-1, new_state)[0]
-                if score < min:
-                    min = score
-                    best_move = move
-            return min, best_move
+                score = minimax(depth-1, new_state, alpha, beta)[0]
+                if score < mmin:
+                    mmin = score
+                    if depth == original_depth:
+                        best_move = move
+                beta = min(beta, score)
+                if beta <= alpha:
+                    break
+            return mmin, best_move
 
 
 
@@ -180,7 +190,10 @@ def result(state, action):
 
 def startMiniMax(depth, board):
     b = BBoard(board)
-    return minimax(depth, b)
+    global original_depth
+    original_depth = deepcopy(depth)
+    
+    return minimax(depth, b, float("-inf"), float("inf"))
     
 
 #Returns ### if the game is over

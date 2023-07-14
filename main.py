@@ -2,6 +2,7 @@ import pygame
 import time
 from copy import deepcopy
 import ai 
+import threading
 
 # Declaring colours in binary format
 
@@ -112,10 +113,10 @@ class Board():
     ['', '', '', '', 'bk', '', '', ''],
     ['', '', '', '', '', '', '', ''],
     ['', '', '', '', '', '', '', ''],
-    ['', '', '', 'br', '', '', 'bq', ''],
     ['', '', '', '', '', '', '', ''],
     ['', '', '', '', '', '', '', ''],
-    ['', '', '', 'wr', '', '', '', ''],
+    ['', '', '', '', '', '', 'wr', ''],
+    ['', '', '', '', '', '', 'wr', ''],
     ['', '', '', '', 'wk', '', '', '']
     ]
     moves = []
@@ -600,10 +601,22 @@ piece_held = (9, 9, 'nn')
 
 # Check to see if promotions box is made yet
 flag_ismade = False
+ai_thinking = False
 
 board = Board()
 board.readjustPieces()
 pieces_rect = []
+FPS = 30
+
+def makeAIMove():
+    start_time = time.time()
+    move = ai.startMiniMax(4, board.board)
+    print(f"Evaluation at depth 4 took: {time.time()-start_time} seconds")
+    board.makeMove(move[1][0], move[1][1][0], move[1][1][1], AI=True, choice="q")
+    global FPS 
+    FPS = 30
+    global ai_thinking
+    ai_thinking = False
 
 while not done:
     for event in pygame.event.get():
@@ -683,22 +696,21 @@ while not done:
         box2 = pygame.draw.rect(screen, NEW, (board.board_x-current_size[0]*0.025, current_size[1]*0.87, (current_size[1]*0.7)//8*8+current_size[0]*0.05, current_size[1]*0.1))
         if choice_making == True:
             box3 = pygame.draw.rect(screen, WHITE, [(board.board_x+0.5*board.board_width)-(2*board.sizeOfPiece)-(2.5*current_size[1]*0.01),
-                                             board.board_y+0.5*board.board_height-(0.5*board.sizeOfPiece) -(2*current_size[1]*0.01), 4*board.sizeOfPiece+(5*current_size[1]*0.01), board.sizeOfPiece+2*current_size[1]*0.01])
+                                            board.board_y+0.5*board.board_height-(0.5*board.sizeOfPiece) -(2*current_size[1]*0.01), 4*board.sizeOfPiece+(5*current_size[1]*0.01), board.sizeOfPiece+2*current_size[1]*0.01])
             flag_ismade = True
             count = 0
             for piece in images:
                 if piece[0] == board.onscreen_promotion_list[count]:
-                     piece_rect = piece[1].get_rect()
-                     piece_rect.center = [box3.x+(count+0.75)*board.sizeOfPiece, 
-                                          box3.y+0.5*box3.height]
-                     screen.blit(piece[1], piece_rect)
-                     count = count + 1
+                    piece_rect = piece[1].get_rect()
+                    piece_rect.center = [box3.x+(count+0.75)*board.sizeOfPiece, 
+                                        box3.y+0.5*box3.height]
+                    screen.blit(piece[1], piece_rect)
+                    count = count + 1
                 if count == 4:
                     break
         #Timer
         if int(time.time() - newGame.startTime) > newGame.lastTime:
             #board.getAllMoves("WHITE")
-            print(board.isStalemate())
             """
             #print(board.isInCheck())
             if (board.isInCheck())[0] == "BLACK":
@@ -723,10 +735,12 @@ while not done:
         
         screen.blit(screen_player_one_timer_text_surface, screen_player_one_timer_rect)
         screen.blit(screen_player_two_timer_text_surface, screen_player_two_timer_rect)
-        if board.move % 2 == 0:
-            time.sleep(0.2)
-            move = ai.startMiniMax(4, board.board)
-            board.makeMove(move[1][0], move[1][1][0], move[1][1][1], AI=True, choice="q")
+        if board.move % 2 == 0 and ai_thinking == False:
+            ai_thinking = True
+            FPS = 0
+            move = ""
+            t1 = threading.Thread(target=makeAIMove, args=())
+            t1.start()
         if hold_click == True:
             mouse_pos = pygame.mouse.get_pos()
             column_clicked = int((mouse_pos[0]-board.board_x) // board.box_dimen)
@@ -755,5 +769,8 @@ while not done:
                 except Exception as e:
                     ...
     pygame.display.flip()
-    clock.tick(30)
+    clock.tick(FPS)
+
+
+
 pygame.quit()
