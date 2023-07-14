@@ -119,6 +119,7 @@ class Board():
     ['', '', '', '', '', '', 'wr', ''],
     ['', '', '', '', 'wk', '', '', '']
     ]
+    board = classic_board
     moves = []
     promotion_list = ['q', 'r', 'n', 'b']
     onscreen_promotion_list = ['bq', 'br', 'bn', 'bb']
@@ -609,9 +610,11 @@ pieces_rect = []
 FPS = 30
 
 def makeAIMove():
+    depth = 4
     start_time = time.time()
-    move = ai.startMiniMax(4, board.board)
-    print(f"Evaluation at depth 4 took: {time.time()-start_time} seconds")
+    move = ai.startMiniMax(depth, board.board)
+    print(f"Evaluation at depth {depth} with Transposition table took: {time.time()-start_time} seconds")
+    print(f"Number of transpositions: {ai.transpositions}")
     board.makeMove(move[1][0], move[1][1][0], move[1][1][1], AI=True, choice="q")
     global FPS 
     FPS = 30
@@ -737,7 +740,7 @@ while not done:
         screen.blit(screen_player_two_timer_text_surface, screen_player_two_timer_rect)
         if board.move % 2 == 0 and ai_thinking == False:
             ai_thinking = True
-            FPS = 0
+            FPS = 1
             move = ""
             t1 = threading.Thread(target=makeAIMove, args=())
             t1.start()
@@ -771,6 +774,5 @@ while not done:
     pygame.display.flip()
     clock.tick(FPS)
 
-
-
+t1.join()
 pygame.quit()
