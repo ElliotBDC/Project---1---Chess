@@ -3,7 +3,7 @@ import java.net.*;
 import java.util.Scanner;
 
 public class Client {
-    public void connectToServer(String address, int port) {
+    public static void connectToServer(String address, int port) {
         try {
             Socket socket = new Socket(address, port);
             System.out.println("Connected");
