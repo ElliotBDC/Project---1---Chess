@@ -1,0 +1,16 @@
+Beginning
+First 4 moves:
+
+Evaluation at depth 4 without Transposition table took: 1.9062414169311523 seconds
+Number of transpositions: 0
+Nodes per second (nps): 3500.0813332139305
+Evaluation at depth 4 without Transposition table took: 5.647375822067261 seconds
+Number of transpositions: 0
+Nodes per second (nps): 5944.633593738655
+Evaluation at depth 4 without Transposition table took: 5.903635025024414 seconds
+Number of transpositions: 0
+Nodes per second (nps): 7093.743560952916
+Evaluation at depth 4 without Transposition table took: 12.063806295394897 seconds
+Number of transpositions: 0
+Nodes per second (nps): 7423.867562891481
+

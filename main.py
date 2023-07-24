@@ -68,7 +68,6 @@ images = [
     ['bb', bb],
     ['bk', bk]
 ]
-
 classic_board = [
     ['br', 'bn', 'bb', 'bq', 'bk', 'bb', 'bn', 'br'],
     ['bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'bp'],
@@ -79,6 +78,7 @@ classic_board = [
     ['wp', 'wp', 'wp', 'wp', 'wp', 'wp', 'wp', 'wp'],
     ['wr', 'wn', 'wb', 'wq', 'wk', 'wb', 'wn', 'wr']
     ]
+
 
 # Formats the time in seconds to a minutes:seconds representation
 
@@ -611,10 +611,12 @@ FPS = 30
 
 def makeAIMove():
     depth = 4
+
     start_time = time.time()
-    move = ai.startMiniMax(depth, board.board)
+    move = ai.startMiniMax(depth, board.board, board.move)
     print(f"Evaluation at depth {depth} with Transposition table took: {time.time()-start_time} seconds")
     print(f"Number of transpositions: {ai.transpositions}")
+    print(f"Nodes per second (nps): {ai.nodes/(time.time()-start_time)}")
     board.makeMove(move[1][0], move[1][1][0], move[1][1][1], AI=True, choice="q")
     global FPS 
     FPS = 30
@@ -645,7 +647,7 @@ while not done:
                 board.readjustPieces()
             # Resets the board to its original state. NOTE: Should soon aim to integrate into board class
             if event.key == pygame.K_r:
-                board.board = deepcopy(classic_board)
+                #board.board = deepcopy(classic_board)
                 board.move = 0
                 board.black_king = [0, 4]
                 board.white_king = [7, 4]

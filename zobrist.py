@@ -21,15 +21,14 @@ classic_board = [
 piece_values = {'p' : 0, 'n' : 1, 'b' : 2, 'r' : 3, 'q' : 4, 'k': 5}
 colour_values = {'w' : 0, 'b' : 1}
 
-def calculateZobristKey(board, move):
+def calculateZobristKey(board, move, all_pieces):
     key = 0
     ### TODO: Change looping through board to looping through piece list (I have to
     # create one first). - Will increase efficiency of program
-    for index_x, row in enumerate(board):
-        for index_y, piece in enumerate(row):
-            if piece != "":
-                position = (index_x*8)+index_y
-                key = key ^ arr[piece_values[piece[1]], colour_values[piece[0]], position]
+    #all_pieces = board.white_pieces + board.black_pieces
+    for piece in all_pieces:    
+        position = (piece[1][0]*8)+piece[1][1]
+        key = key ^ arr[piece_values[piece[0][1]], colour_values[piece[0][0]], position]
     if move % 2 == 1:
         key = key ^ constant_key
     return key
@@ -39,14 +38,7 @@ keys = {}
 def addKey(key, evaluation_score):
     keys[key] = (evaluation_score)
 
-from functools import lru_cache
 
-@lru_cache(maxsize=None)
-def getKey(key):
-    return keys[key]
-
-
-
-calculateZobristKey(classic_board, 5)
+#calculateZobristKey(classic_board, 5)
 #print(arr)
 #print(arr[5, 1, 63])

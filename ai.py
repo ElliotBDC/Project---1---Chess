@@ -125,17 +125,19 @@ def evaluate(board):
     return score
 
 def minimax(depth, state, alpha, beta):
+        global nodes
+        nodes = nodes + 1
         best_move = ""
         if depth == 0:
-                new_zkey = zobrist.calculateZobristKey(state.board, state.move)
-                fetch = zobrist.keys.get(new_zkey)
-                if  fetch == None:
-                    eval = evaluate(state.board)
-                    zobrist.addKey(new_zkey, eval)
-                else:
-                    global transpositions
-                    transpositions = transpositions + 1
-                    eval = fetch
+                #new_zkey = zobrist.calculateZobristKey(state.board, state.move)
+                #fetch = zobrist.keys.get(new_zkey)
+                #if  fetch == None:
+                eval = evaluate(state.board)
+                #    zobrist.addKey(new_zkey, eval)
+                #else:
+                #    global transpositions
+                #    transpositions = transpositions + 1
+                #    eval = fetch
                 return eval, ""
     
         if state.move % 2 == 0:
@@ -144,7 +146,9 @@ def minimax(depth, state, alpha, beta):
             if moves == 0:
                 if state.isCheckmate("WHITE", state.isInCheck()[1]):
                     print("CHECKMATE DETECTED")
-                    return 99999 + depth, ""
+                    print(state.board)
+                    print(depth)
+                    return -99999 - depth, ""
                 return 0, ""
             for move in moves:
                 new_state = BBoard(result(deepcopy(state), move), state.move+1)
@@ -163,7 +167,7 @@ def minimax(depth, state, alpha, beta):
             if moves == 0:
                 if state.isCheckmate("BLACK", state.isInCheck()[1]):
                     print("CHECKMATE DETECTED")
-                    return -99999 - depth, ""
+                    return 99999 + depth, ""
                 return 0, ""
             for move in moves:
                 new_state = BBoard(result(deepcopy(state), move), state.move+1)
@@ -184,26 +188,22 @@ def minimax(depth, state, alpha, beta):
 
 def actions(state):
     if state.move % 2 == 0:
-        #print(state.getAllMoves("WHITE"))
         return state.getAllMoves("WHITE")
-    #print("H")
     return state.getAllMoves("BLACK")
 
 # Returns the reuslting board after an action has been made
 def result(state, action):
     state.makeMove(action[0], action[1][0], action[1][1])
-    #print("     ")
-    #for row in state.board:
-    #    print(row)
-    #print("         ")
     return state.board
 
-def startMiniMax(depth, board):
-    b = BBoard(board)
+def startMiniMax(depth, board, pmove):
+    b = BBoard(board, move=pmove)
     global original_depth
     #global zkey
     #zkey = zobrist.calculateZobristKey(board)
     #zobrist.addKey(zkey)
+    global nodes
+    nodes = 0
     original_depth = deepcopy(depth)
     global transpositions
     transpositions = 0
@@ -216,6 +216,8 @@ def startMiniMax(depth, board):
 
 
 if __name__ == "__main__":
+    global nodes
+    nodes = 0
     b = BBoard(classic_board)
 
     #print(b.getAllMoves("WHITE"))
