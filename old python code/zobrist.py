@@ -40,5 +40,5 @@ def addKey(key, evaluation_score):
 
 
 #calculateZobristKey(classic_board, 5)
-#print(arr)
+print(arr)
 #print(arr[5, 1, 63])
