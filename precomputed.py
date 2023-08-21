@@ -1,4 +1,5 @@
 current_knight_pos = 0b101000010001000000000001000100001010
+current_king_pos = 0b1110000010100000111
 
 FILE_H = 0b100000001000000010000000100000001000000010000000100000001
 FILE_G = FILE_H << 1
@@ -73,6 +74,7 @@ LSB_LOOKUP = {
 }
 
 KNIGHT_MOVES = {}
+KING_MOVES = {}
 
 import numpy as np
 
@@ -83,14 +85,26 @@ for i in range(0, 64):
         LSB = current_knight_pos << (position-18)
     else:
         LSB = current_knight_pos >> (18-position)
+    if position > 9:
+        LSB_2 = current_king_pos << (position-9)
+    else:
+        LSB_2 = current_king_pos >> (9-position)
     print(position%8)
     if position%8 < 4:
         LSB &= ~(FILE_A|FILE_B)
+        LSB_2&= ~(FILE_A|FILE_B)
     else:
         LSB &= ~(FILE_G|FILE_H)
+        LSB_2&= ~(FILE_G|FILE_H)
     KNIGHT_MOVES[i] = LSB
+    KING_MOVES[i] = LSB_2
 
 print(KNIGHT_MOVES)
 print((current_knight_pos >> 9)&~(FILE_A|FILE_B))
-print(bin(460039))
 
+print("1"*64)
+
+def reverse_bits(bits):
+    return int(bin(bits)[:1:-1], 2)
+
+print(bin(reverse_bits(0b11000)))

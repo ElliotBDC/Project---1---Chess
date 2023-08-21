@@ -1,7 +1,7 @@
 import pygame
 import time
 from copy import deepcopy
-import server
+import board
 # Declaring colours in binary format
 
 BLACK = (0, 0, 0)
@@ -100,6 +100,8 @@ choice_making = False
 
 # Declaring the class for the chess board (functionality & design)
 
+newBoard = board.Board()
+
 class Board():
     # Display Properties
     board_x = current_size[0]*0.05
@@ -142,6 +144,7 @@ class Board():
         self.sizeOfPiece = (current_size[1]*0.7)/8.3
 
     def drawBoard(self, screen):
+        self.board = newBoard.mailboard
         self.box_dimen = (current_size[1]*0.7) // 8
         self.board_x = current_size[0]*0.05
         self.board_y = 0.15*current_size[1]
@@ -331,11 +334,15 @@ while not done:
                         if (piece_held[2][0] == "w" and board.move % 2 == 0) or (piece_held[2][0] == "b" and board.move % 2 != 0):
                             column_clicked = int((mouse_pos[0]-board.board_x) // board.box_dimen)
                             row_clicked = int((mouse_pos[1]-board.board_y) // board.box_dimen)
-                            move = str(piece_held[0])+str(piece_held[1]) + str(row_clicked)+str(column_clicked)
-                            print(f"{move}")
-                            server.sendMessage(move)
-                            waiting_tbc_verified = [board.board[piece_held[0]][piece_held[1]], move]
-                            board.board[piece_held[0]][piece_held[1]] = ""
+                            move = str(7-piece_held[0])+str(piece_held[1]) + str(7-row_clicked)+str(column_clicked)
+                            possible_moves = newBoard.getAllMoves()
+                            print(f"Move: {move} + Poss: {possible_moves}")
+                            for i in range(0, len(possible_moves)):
+                                if move == possible_moves[i:i+4]:
+                                    print("YH")
+                                    newBoard.makeMove(possible_moves[i:i+5])
+                                    board.move+=1
+                            
                             #board.makeMove(piece_held, row_clicked, column_clicked)
                 hold_click = False
                 piece_lock = False

@@ -77,10 +77,11 @@ LSB_LOOKUP = {
   4611686018427387904: 62,
   9223372036854775808: 63
 }
-
+import numpy as np
 class Board:
 
     #Declaring the bitboards for each piece
+    VALID_BOARD = 0b1111111111111111111111111111111111111111111111111111111111111111
     BP = 0b11111111000000000000000000000000000000000000000000000000
     BN = 0b100001000000000000000000000000000000000000000000000000000000000
     BB = 0b10010000000000000000000000000000000000000000000000000000000000
@@ -96,7 +97,6 @@ class Board:
     OCCUPIED = WP|WN|WB|WR|WQ|WK|BP|BN|BB|BR|BQ|BK
     EMPTY = ~OCCUPIED
     WhitePlayerMove = True
-    PlayerToMovePieces = WP|WN|WB|WR|WQ|WK
 
     mailboard = [
     ['br', 'bn', 'bb', 'bq', 'bk', 'bb', 'bn', 'br'],
@@ -125,7 +125,7 @@ class Board:
 
             # Pawn moving 1 square forward
 
-            ForwardOne = PLAYER_PIECES << 8 & EMPTY
+            ForwardOne = PLAYER_PIECES << 8 & self.EMPTY
             LSB = ForwardOne & -ForwardOne 
             while LSB != 0:
                 position = LSB_LOOKUP[LSB]
@@ -133,7 +133,7 @@ class Board:
                 if LSB & RANK_8 == 0:
                     pos_1 = position//8
                     pos_2 = str(position%8)
-                    moves+= ""+ str(pos_1+1) + pos_2 + str(pos_1) + pos_2
+                    moves+= ""+ str(pos_1-1) + pos_2 + str(pos_1) + pos_2 + "P"
                 else:
                     pos_1 = position%8
                     pos_2 = position%8
@@ -144,13 +144,13 @@ class Board:
 
             # Pawn moving 2 squares forward - Only possible from the starting pawn position
 
-            ForwardTwo = PLAYER_PIECES << 16 & EMPTY & EMPTY << 8 & RANK_4
+            ForwardTwo = PLAYER_PIECES << 16 & self.EMPTY & self.EMPTY << 8 & RANK_4
             LSB = ForwardTwo & -ForwardTwo
             while LSB != 0:
                 position = LSB_LOOKUP[LSB]
                 pos_1 = position//8
                 pos_2 = str(position%8)
-                moves+= ""+ str(pos_1+2) + pos_2 + str(pos_1) + pos_2
+                moves+= ""+ str(pos_1+2) + pos_2 + str(pos_1) + pos_2 + "P"
                 ForwardTwo = ForwardTwo & ~LSB
                 LSB = ForwardTwo & -ForwardTwo
 
@@ -164,7 +164,7 @@ class Board:
                 if LSB & RANK_8 == 0:
                     pos_1 = position/8
                     pos_2 = str(position%8)
-                    moves+= ""+ str(pos_1+1) + pos_2-1 + str(pos_1) + pos_2
+                    moves+= ""+ str(pos_1+1) + pos_2-1 + str(pos_1) + pos_2 + "P"
                 else:
                     pos_1 = str(position%8-1)
                     pos_2 = str(position%8)
@@ -183,7 +183,7 @@ class Board:
                 if LSB & RANK_8 == 0:
                     pos_1 = position/8
                     pos_2 = str(position%8+1)
-                    moves+= ""+ str(pos_1+1) + pos_2 + str(pos_1) + pos_2
+                    moves+= ""+ str(pos_1+1) + pos_2 + str(pos_1) + pos_2 + "P"
                 else:
                     pos_1 = str(position%8+1)
                     pos_2 = str(position%8)
@@ -225,6 +225,8 @@ class Board:
 
             #------------King Moves--------------#
 
+            moves+= self.getKingMoves(self.WK)
+
 
         else:
         
@@ -236,7 +238,7 @@ class Board:
 
             # Pawn moving 1 square forward
 
-            ForwardOne = PLAYER_PIECES >> 8 & EMPTY
+            ForwardOne = PLAYER_PIECES >> 8 & self.EMPTY
             LSB = ForwardOne & -ForwardOne 
             while LSB != 0:
                 position = LSB_LOOKUP[LSB]
@@ -244,7 +246,7 @@ class Board:
                 if LSB & RANK_1 == 0:
                     pos_1 = position//8
                     pos_2 = str(position%8)
-                    moves+= ""+ str(pos_1-1) + pos_2 + str(pos_1) + pos_2
+                    moves+= ""+ str(pos_1-1) + pos_2 + str(pos_1) + pos_2 + "P"
                 else:
                     pos_1 = position%8
                     pos_2 = position%8
@@ -255,13 +257,13 @@ class Board:
 
             # Pawn moving 2 squares forward - Only possible from the starting pawn position
 
-            ForwardTwo = PLAYER_PIECES >> 16 & EMPTY & EMPTY >> 8 & RANK_5
+            ForwardTwo = PLAYER_PIECES >> 16 & self.EMPTY & self.EMPTY >> 8 & RANK_5
             LSB = ForwardTwo & -ForwardTwo
             while LSB != 0:
                 position = LSB_LOOKUP[LSB]
                 pos_1 = position//8
                 pos_2 = str(position%8)
-                moves+= ""+ str(pos_1-2) + pos_2 + str(pos_1) + pos_2
+                moves+= ""+ str(pos_1-2) + pos_2 + str(pos_1) + pos_2 + "P"
                 ForwardTwo = ForwardTwo & ~LSB
                 LSB = ForwardTwo & -ForwardTwo
 
@@ -275,7 +277,7 @@ class Board:
                 if LSB & RANK_1 == 0:
                     pos_1 = position/8
                     pos_2 = str(position%8)
-                    moves+= ""+ str(pos_1-1) + pos_2+1 + str(pos_1) + pos_2
+                    moves+= ""+ str(pos_1-1) + pos_2+1 + str(pos_1) + pos_2 + "P"
                 else:
                     pos_1 = str(position%8+1)
                     pos_2 = str(position%8)
@@ -294,7 +296,7 @@ class Board:
                 if LSB & RANK_1 == 0:
                     pos_1 = position/8
                     pos_2 = str(position%8+1)
-                    moves+= ""+ str(pos_1-1) + pos_2 + str(pos_1) + pos_2
+                    moves+= ""+ str(pos_1-1) + pos_2 + str(pos_1) + pos_2 + "P"
                 else:
                     pos_1 = str(position%8-1)
                     pos_2 = str(position%8)
@@ -321,57 +323,140 @@ class Board:
 
             moves += self.getKnightMoves(self.BN)
 
+            #------------Bishop Moves--------------#
+
+            moves+= self.getBishopMoves(self.BB)
+
+            #------------Rook Moves--------------#
+
+            moves+= self.getRookMoves(self.BR)
+
+            #------------Queen Moves--------------#
+
+            moves+= self.getBishopMoves(self.BQ)
+            moves+= self.getRookMoves(self.BQ)
+
+            #------------King Moves--------------#
+
+            moves+= self.getKingMoves(self.BK)
         
-        
-
-
-
         return moves
-    
+
     def getKnightMoves(self, KNIGHTS):
         LSB = KNIGHTS & -KNIGHTS
         moves = ""
-        print(f"KNIGHTS: {KNIGHTS} + LSB {LSB}")
         while LSB != 0:
             pos = LSB_LOOKUP[LSB]
-            Possible_Moves = precomputed.KNIGHT_MOVES[pos] & ~(self.PlayerToMovePieces)
-            print(f"LSB {LSB} + Moves {bin(Possible_Moves)}")
+            Possible_Moves = precomputed.KNIGHT_MOVES[pos] & ~(self.PlayerToMovePieces) & self.VALID_BOARD
             LSB_2 = Possible_Moves & -Possible_Moves
-            print(f"LSB 2 V {bin(LSB_2)}")
             while LSB_2 != 0:
-                print(LSB_2)
                 position = LSB_LOOKUP[LSB_2]
-                moves+=""+str(pos//8)+str(pos%8)+str(position//8)+str(position%8)
+                moves+=""+str(pos//8)+str(pos%8)+str(position//8)+str(position%8)+"N"
                 Possible_Moves = Possible_Moves & ~LSB_2
                 LSB_2 = Possible_Moves & -Possible_Moves
             KNIGHTS = KNIGHTS &~ LSB
-            print(f"KNIGHTS 2 {KNIGHTS}")
             LSB = KNIGHTS & -KNIGHTS
-            print(f"LSB 2 {LSB}")
-        print(moves)
         return moves
 
-    def getRookMoves(self):
-        
+    def getRookMoves(self, ROOKS):
+        return ""
+        moves=""
+        LSB = ROOKS & -ROOKS
+        while LSB !=0:
+            Possible_Moves = (self.OCCUPIED-2*LSB)
 
-    def getBishopMoves(self):
-        ...
+
+    def getBishopMoves(self, BISHOPS):
+        return ""
 
     def getKingMoves(self, king):
+        moves=""
         pos = LSB_LOOKUP[king]
-        Possible_Moves = precomputed.KING_MOVES[pos] & ~(self.PlayerToMovePieces)
+        Possible_Moves = precomputed.KING_MOVES[pos] & ~(self.PlayerToMovePieces) & self.VALID_BOARD
         LSB = Possible_Moves & -Possible_Moves
         while LSB != 0:
             position = LSB_LOOKUP[LSB]
-            moves +=pos//8+pos%8+position//8+position%8
+            moves +=str(pos//8)+str(pos%8)+str(position//8)+str(position%8)+"K"
             Possible_Moves = Possible_Moves & ~LSB
             LSB = Possible_Moves & -Possible_Moves
         return moves
             
-
+    def moveToAlgebra(self, move):
+        str_move = chr(ord(move[1])+49)+str(int(move[0]))+chr(ord(move[3])+49)+str(int(move[2]))
+        return str_move
+    
+    def printMailBoard(self):
+        for row in self.mailboard:
+            print(row)
+    
+    def makeMove(self, move):
+        if move[3].isnumeric():
+            #if self.mailboard[move[2]][move[3]] != "":
+            x1 = 7-int(move[0])
+            y1 = int(move[1])
+            x2 = 7-int(move[2])
+            y2 = int(move[3])
+            match move[4]:
+                case "P":
+                    print("Y")
+                    print(x1*8 + y1)
+                    if self.WP & (0b1 << x1*8 + y1) != 0:
+                        print("H")
+                        self.mailboard[x2][y2] = self.mailboard[x1][y1]
+                        self.WP = self.WP ^ ((0b1<<(x2*8 + y2)) | (0b1<<(x1*8 + y1)))
+                    else:
+                        self.mailboard[x2][y2] = self.mailboard[x1][y1]
+                        self.BP = self.BP ^ ((0b1<<(x2*8 + y2)) | (0b1<<(x1*8 + y1)))
+                    self.mailboard[x1][y1] = ""
+                case "N": 
+                    if self.WN & (0b1 << x1*8 + y1) != 0:
+                        self.mailboard[x2][y2] = self.mailboard[x1][y1]
+                        self.WN = self.WN ^ ((0b1<<(x2*8 + y2)) | (0b1<<(x1*8 + y1)))
+                    else:
+                        self.mailboard[x2][y2] = self.mailboard[x1][y1]
+                        self.BN = self.BN ^ ((0b1<<(x2*8 + y2)) | (0b1<<(x1*8 + y1)))
+                    self.mailboard[x1][y1] = ""
+                case "B":
+                    if self.WB & (0b1 << x1*8 + y1) != 0:
+                        self.mailboard[x2][y2] = self.mailboard[x1][y1]
+                        self.WB = self.WB ^ ((0b1<<(x2*8 + y2)) | (0b1<<(x1*8 + y1)))
+                    else:
+                        self.mailboard[x2][y2] = self.mailboard[x1][y1]
+                        self.BB = self.BB ^ ((0b1<<(x2*8 + y2)) | (0b1<<(x1*8 + y1)))
+                    self.mailboard[x1][y1] = ""
+                case "R":
+                    if self.WR & (0b1 << x1*8 + y1) != 0:
+                        self.mailboard[x2][y2] = self.mailboard[x1][y1]
+                        self.WR = self.WR ^ ((0b1<<(x2*8 + y2)) | (0b1<<(x1*8 + y1)))
+                    else:
+                        self.mailboard[x2][y2] = self.mailboard[x1][y1]
+                        self.BR = self.BR ^ ((0b1<<(x2*8 + y2)) | (0b1<<(x1*8 + y1)))
+                    self.mailboard[x1][y1] = ""
+                case "Q":
+                    if self.WQ & (0b1 << x1*8 + y1) != 0:
+                        self.mailboard[x2][y2] = self.mailboard[x1][y1]
+                        self.WQ = self.WQ ^ ((0b1<<(x2*8 + y2)) | (0b1<<(x1*8 + y1)))
+                    else:
+                        self.mailboard[x2][y2] = self.mailboard[x1][y1]
+                        self.BQ = self.BQ ^ ((0b1<<(x2*8 + y2)) | (0b1<<(x1*8 + y1)))
+                    self.mailboard[x1][y1] = ""
+                case "K":
+                    if self.WK & (0b1 << x1*8 + y1) != 0:
+                        self.mailboard[x2][y2] = self.mailboard[x1][y1]
+                        self.WK = self.WK ^ ((0b1<<(x2*8 + y2)) | (0b1<<(x1*8 + y1)))
+                    else:
+                        self.mailboard[x2][y2] = self.mailboard[x1][y1]
+                        self.BK = self.BK ^ ((0b1<<(x2*8 + y2)) | (0b1<<(x1*8 + y1)))
+                    self.mailboard[x1][y1] = ""
+        self.WhitePlayerMove = not self.WhitePlayerMove
+            
+            
 
 newBoard = Board()
 print(newBoard.getAllMoves())
-print(f"{int(len(newBoard.getAllMoves())/4)} possible moves")
+#print(f"{int(len(newBoard.getAllMoves())/4)} possible moves")
+newBoard.printMailBoard()
+
+
 
 
