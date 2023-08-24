@@ -104,7 +104,3 @@ print((current_knight_pos >> 9)&~(FILE_A|FILE_B))
 
 print("1"*64)
 
-def reverse_bits(bits):
-    return int(bin(bits)[:1:-1], 2)
-
-print(bin(reverse_bits(0b11000)))

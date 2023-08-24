@@ -331,10 +331,12 @@ while not done:
             if hold_click == True:
                 if piece_lock == True:
                     if board.board_x+board.board_width > mouse_pos[0] > board.board_x and board.board_y < mouse_pos[1] < board.board_y+board.board_height:
-                        if (piece_held[2][0] == "w" and board.move % 2 == 0) or (piece_held[2][0] == "b" and board.move % 2 != 0):
+                        #if (piece_held[2][0] == "w" and board.move % 2 == 0) or (piece_held[2][0] == "b" and board.move % 2 != 0):
+                        print(newBoard.WhitePlayerMove)
+                        if (piece_held[2][0] == "w" and newBoard.WhitePlayerMove == True) or (piece_held[2][0] == "b" and newBoard.WhitePlayerMove == False):
                             column_clicked = int((mouse_pos[0]-board.board_x) // board.box_dimen)
                             row_clicked = int((mouse_pos[1]-board.board_y) // board.box_dimen)
-                            move = str(7-piece_held[0])+str(piece_held[1]) + str(7-row_clicked)+str(column_clicked)
+                            move = str(7-piece_held[0])+str(7-piece_held[1]) + str(7-row_clicked)+str(7-column_clicked)
                             possible_moves = newBoard.getAllMoves()
                             print(f"Move: {move} + Poss: {possible_moves}")
                             for i in range(0, len(possible_moves)):
@@ -343,7 +345,6 @@ while not done:
                                     newBoard.makeMove(possible_moves[i:i+5])
                                     board.move+=1
                             
-                            #board.makeMove(piece_held, row_clicked, column_clicked)
                 hold_click = False
                 piece_lock = False
                 piece_held = (9, 9, 'nn')
