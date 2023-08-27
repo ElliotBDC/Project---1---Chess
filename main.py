@@ -1,7 +1,7 @@
 import pygame
 import time
-from copy import deepcopy
 import board
+
 # Declaring colours in binary format
 
 BLACK = (0, 0, 0)
@@ -13,7 +13,8 @@ def hex_to_rgb(hex_color):
     hex_color = hex_color.lstrip("#")
     return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
 
-BACKGROUND_COLOUR_1 = (6, 4, 2)#hex_to_rgb('#262626')
+BACKGROUND_COLOUR_1 = (6, 4, 2)
+BACKGROUND_COLOUR_1 = hex_to_rgb('#262626')
 #BACKGROUND_COLOUR_1 = hex_to_rgb('#272932')
 BBLUE = hex_to_rgb('#BA8C63')
 NEW = hex_to_rgb('#114b5f')
@@ -36,47 +37,47 @@ clock = pygame.time.Clock()
 # Loading images of the chess pieces
 
 """
-wp = [colour, piece]
-e.g wp = [white, pawn] hence -> wp
+WP = 'colour + piece'
+e.g WP = 'white' (W) + 'pawn' (P) hence -> WP
 """
 
-wp = pygame.image.load("images/wP.svg")
-wr = pygame.image.load("images/wR.svg")
-wb = pygame.image.load("images/wB.svg")
-wn = pygame.image.load("images/wN.svg")
-wq = pygame.image.load("images/wQ.svg")
-wk = pygame.image.load("images/wK.svg")
-bp = pygame.image.load("images/bP.svg")
-bq = pygame.image.load("images/bQ.svg")
-br = pygame.image.load("images/bR.svg")
-bn = pygame.image.load("images/bN.svg")
-bb = pygame.image.load("images/bB.svg")
-bk = pygame.image.load("images/bK.svg")
-pygame.display.set_icon(bp)
+WP = pygame.image.load("images/wP.svg")
+WR = pygame.image.load("images/wR.svg")
+WB = pygame.image.load("images/wB.svg")
+WN = pygame.image.load("images/wN.svg")
+WQ = pygame.image.load("images/wQ.svg")
+WK = pygame.image.load("images/wK.svg")
+BP = pygame.image.load("images/bP.svg")
+BQ = pygame.image.load("images/bQ.svg")
+BR = pygame.image.load("images/bR.svg")
+BN = pygame.image.load("images/bN.svg")
+BB = pygame.image.load("images/bB.svg")
+BK = pygame.image.load("images/bK.svg")
+pygame.display.set_icon(BP)
 
 images = [
-    ['wp', wp],
-    ['wr', wr],
-    ['wb', wb],
-    ['wn', wn],
-    ['wq', wq],
-    ['wk', wk],
-    ['bp', bp],
-    ['bq', bq],
-    ['br', br],
-    ['bn', bn],
-    ['bb', bb],
-    ['bk', bk]
+    ['WP', WP],
+    ['WR', WR],
+    ['WB', WB],
+    ['WN', WN],
+    ['WQ', WQ],
+    ['WK', WK],
+    ['BP', BP],
+    ['BQ', BQ],
+    ['BR', BR],
+    ['BN', BN],
+    ['BB', BB],
+    ['BK', BK]
 ]
 classic_board = [
-    ['br', 'bn', 'bb', 'bq', 'bk', 'bb', 'bn', 'br'],
-    ['bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'bp'],
+    ['BR', 'BN', 'BB', 'BQ', 'BK', 'BB', 'BN', 'BR'],
+    ['BP', 'BP', 'BP', 'BP', 'BP', 'BP', 'BP', 'BP'],
     ['', ' ', '', '', '', '', '', ''],
     ['', '', '', '', '', '', '', ''],
     ['', '', '', '', '', '', '', ''],
     ['', '', '', '', '', '', '', ''],
-    ['wp', 'wp', 'wp', 'wp', 'wp', 'wp', 'wp', 'wp'],
-    ['wr', 'wn', 'wb', 'wq', 'wk', 'wb', 'wn', 'wr']
+    ['WP', 'WP', 'WP', 'WP', 'WP', 'WP', 'WP', 'WP'],
+    ['WR', 'WN', 'WB', 'WQ', 'WK', 'WB', 'WN', 'WR']
     ]
 
 def moveToAlgebra(move):
@@ -94,7 +95,7 @@ def secondsToTime(seconds):
         secondsLeft = "0" + str(secondsLeft)
     return (f"{minutes}:{secondsLeft}")
 
-# Variable used when pawn is promoted and player needs to choose replacing piece
+# Variable used when paWN is promoted and player needs to choose replacing piece
 
 choice_making = False
 
@@ -109,31 +110,13 @@ class Board():
     board_height = current_size[1]*0.7
     board_width = board_height
     box_dimen = (current_size[1]*0.7) // 8
-    moves_this_turn = ""
 
     #Board 
     move = 0
-    white_king = [7, 4]
-    black_king = [0, 4]
-    board = [
-    ['', '', '', '', 'bk', '', '', ''],
-    ['', '', '', '', '', '', '', ''],
-    ['', '', '', '', '', '', '', ''],
-    ['', '', '', '', '', '', '', ''],
-    ['', '', '', '', '', '', '', ''],
-    ['', '', '', '', '', '', 'wr', ''],
-    ['', '', '', '', '', '', 'wr', ''],
-    ['', '', '', '', 'wk', '', '', '']
-    ]
-    board = classic_board
+    board = newBoard.mailboard
     moves = []
-    promotion_list = ['q', 'r', 'n', 'b']
-    onscreen_promotion_list = ['bq', 'br', 'bn', 'bb']
-    white_king_moved = False
-    black_king_moved = False
-    rooks_moved = [False, False, False, False]
-    sizeOfPiece = ""
-    pawn_promotion_position = []
+    promotion_list = ['Q', 'R', 'N', 'B']
+    onscreen_promotion_list = ['BQ', 'BR', 'BN', 'BB']
 
     def __init__(self) -> None:
         pass
@@ -143,7 +126,7 @@ class Board():
             images[index][1] = pygame.transform.scale(piece[1], ((current_size[1]*0.7)/8.3, (current_size[1]*0.7)/8.3))
         self.sizeOfPiece = (current_size[1]*0.7)/8.3
 
-    def drawBoard(self, screen):
+    def draWBoard(self, screen):
         self.board = newBoard.mailboard
         self.box_dimen = (current_size[1]*0.7) // 8
         self.board_x = current_size[0]*0.05
@@ -208,7 +191,7 @@ font_color = (255, 255, 255)
 
 font = pygame.font.Font(font_name, font_size)
 title_font = pygame.font.Font(font_name, 30)
-smaller_font = pygame.font.Font(font_name, 15)
+smaller_font = pygame.font.Font(font_name, 20)
 
 # Section for declaring and rendering text
 
@@ -219,19 +202,19 @@ HEIGHT = current_size[1] * 0.13
 
 ###
 text_1 = "Play vs AI"
-text_1_surface = font.render(text_1, True, WHITE)
+text_1_surface = smaller_font.render(text_1, True, WHITE)
 text_1_rect = text_1_surface.get_rect()
-text_1_rect.center = (SQUARE_WIDTH * 1.5, SQUARE_WIDTH * 1)
+text_1_rect.center = (SQUARE_WIDTH * 3.5, SQUARE_WIDTH * 1.5)
 ###
-text_2 = "Play online"
-text_2_surface = font.render(text_2, True, WHITE)
-text_2_rect = text_2_surface.get_rect()
-text_2_rect.center = (SQUARE_WIDTH * 1.5, SQUARE_WIDTH * 2)
+#text_2 = "Play online"
+#text_2_surface = font.render(text_2, True, WHITE)
+#text_2_rect = text_2_surface.get_rect()
+#text_2_rect.center = (SQUARE_WIDTH * 4, SQUARE_WIDTH * 2)
 ###
-text_3 = "Play offline"
-text_3_surface = font.render(text_3, True, WHITE)
+text_3 = "2 Player"
+text_3_surface = smaller_font.render(text_3, True, WHITE)
 text_3_rect = text_3_surface.get_rect()
-text_3_rect.center = (SQUARE_WIDTH * 1.5, SQUARE_WIDTH * 3)
+text_3_rect.center = (SQUARE_WIDTH * 4.5, SQUARE_WIDTH * 2.5)
 ###
 
 text_5 = "Welcome to Chess"
@@ -262,19 +245,33 @@ waiting_tbc_verified = [2, ""]
 # Check to see if promotions box is made yet
 flag_ismade = False
 ai_thinking = False
+hovering = False
+hover_1 = False
+hover_2 = False
+
+option_1_rect = pygame.Rect(SQUARE_WIDTH*3, SQUARE_WIDTH*1, SQUARE_WIDTH, SQUARE_WIDTH)
+option_2_rect = pygame.Rect(SQUARE_WIDTH*4, SQUARE_WIDTH*2, SQUARE_WIDTH, SQUARE_WIDTH)
 
 board = Board()
 board.readjustPieces()
 pieces_rect = []
 FPS = 30
 
-import threading
-
-#t1 = threading.Thread(target=server.startServer, args=())
-#t1.start()
-
 while not done:
     for event in pygame.event.get():
+        if current_state == HOME_SCREEN:
+            if option_1_rect.collidepoint(pygame.mouse.get_pos()):
+                hovering = True
+                hover_1 = True
+                hover_2 = False
+            elif option_2_rect.collidepoint(pygame.mouse.get_pos()):
+                hovering = True
+                hover_2 = True
+                hover_1 = False
+            else:
+                hovering = False
+                hover_2 = False
+                hover_1 = False
         if event.type == pygame.QUIT:
             done = True
         elif event.type == pygame.KEYDOWN:
@@ -292,26 +289,34 @@ while not done:
                     font_size = 20
                     font = pygame.font.Font(font_name, font_size)
                     text_surface = font.render(text_1, True, WHITE)
-                    text_1_rect.center = (SQUARE_WIDTH * 1.5, SQUARE_WIDTH * 1.5)
+                    
+
+
+                    option_1_rect = pygame.Rect(SQUARE_WIDTH*3, SQUARE_WIDTH*1, SQUARE_WIDTH, SQUARE_WIDTH)
+                    option_2_rect = pygame.Rect(SQUARE_WIDTH*4, SQUARE_WIDTH*2, SQUARE_WIDTH, SQUARE_WIDTH)
+
                 else:
                     current_size = ((screen_width, screen_height))
                     pygame.display.set_mode(current_size, pygame.FULLSCREEN)
                     fullscreen = True
-                    SQUARE_WIDTH = int(current_size[0] / 6) 
+                    SQUARE_WIDTH = int(current_size[0] / 8) 
                     font_size = 40
                     font = pygame.font.Font(font_name, font_size)
                     text_surface = font.render(text_1, True, WHITE)
-                    text_1_rect.center = (SQUARE_WIDTH * 1.5, SQUARE_WIDTH * 1.5)
+                    #text_1_rect.center = (SQUARE_WIDTH * 3.5, SQUARE_WIDTH * 1.5)
+                    #text_3_rect.center = (SQUARE_WIDTH * 4.5, SQUARE_WIDTH * 2.5)
+
+                    option_1_rect = pygame.Rect(SQUARE_WIDTH*3, SQUARE_WIDTH*1, SQUARE_WIDTH, SQUARE_WIDTH)
+                    option_2_rect = pygame.Rect(SQUARE_WIDTH*4, SQUARE_WIDTH*2, SQUARE_WIDTH, SQUARE_WIDTH)
+
                 board.readjustPieces()
             # Resets the board to its original state. NOTE: Should soon aim to integrate into board class
             if event.key == pygame.K_r:
-                #board.board = deepcopy(classic_board)
                 board.move = 0
-                board.black_king = [0, 4]
-                board.white_king = [7, 4]
+                
         elif event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:
-                    current_state = GAME_SCREEN
+                #if event.button == 1:
+                    #current_state = GAME_SCREEN
                 mouse_pos = pygame.mouse.get_pos()
                 if board.board_x+board.board_width > mouse_pos[0] > board.board_x and board.board_y < mouse_pos[1] < board.board_y+board.board_height:
                     hold_click = True
@@ -319,69 +324,84 @@ while not done:
                     if flag_ismade == True:
                         mouse_pos = pygame.mouse.get_pos()
                         if box3.x < mouse_pos[0] < box3.x+box3.width and box3.y < mouse_pos[1] < box3.y+box3.height:
+                            possible_moves = newBoard.getAllMoves()
                             xpos_mouse = ((((mouse_pos[0]-box3.x-0.5*board.sizeOfPiece)/board.sizeOfPiece)-0.75) // 1)+1
-                            pawn_pos = board.pawn_promotion_position
-                            if pawn_pos[0] == 0:
-                                board.board[pawn_pos[0]][pawn_pos[1]] = "w" + board.promotion_list[int(xpos_mouse)]
-                            else:
-                                board.board[pawn_pos[0]][pawn_pos[1]] = "b" + board.promotion_list[int(xpos_mouse)]
+                            for i in range(0, len(possible_moves)-5, 5):
+                                if possible_moves[i:i+4][2] == board.promotion_list[int(xpos_mouse)].upper():
+                                    newBoard.makeMove(possible_moves[i:i+5])
+                                    board.move+=1
+                                    break
                             choice_making = False
                             flag_ismade = False
         elif event.type == pygame.MOUSEBUTTONUP:
             if hold_click == True:
                 if piece_lock == True:
                     if board.board_x+board.board_width > mouse_pos[0] > board.board_x and board.board_y < mouse_pos[1] < board.board_y+board.board_height:
-                        #if (piece_held[2][0] == "w" and board.move % 2 == 0) or (piece_held[2][0] == "b" and board.move % 2 != 0):
-                        print(newBoard.WhitePlayerMove)
-                        if (piece_held[2][0] == "w" and newBoard.WhitePlayerMove == True) or (piece_held[2][0] == "b" and newBoard.WhitePlayerMove == False):
+
+                        if (piece_held[2][0] == "W" and newBoard.WhitePlayerMove == True) or (piece_held[2][0] == "B" and newBoard.WhitePlayerMove == False):
                             column_clicked = int((mouse_pos[0]-board.board_x) // board.box_dimen)
                             row_clicked = int((mouse_pos[1]-board.board_y) // board.box_dimen)
                             move = str(7-piece_held[0])+str(7-piece_held[1]) + str(7-row_clicked)+str(7-column_clicked)
                             possible_moves = newBoard.getAllMoves()
                             print(f"Move: {move} + Poss: {possible_moves}")
+
+                            for i in range(0, len(possible_moves), 5):
+                                if (type(move[2]) == int) == True: 
+                                    print(newBoard.moveToAlgebra(possible_moves[i:i+4])+possible_moves[i+4:i+5])
+
+                            if (piece_held[2] == "WP" and 7-row_clicked == 7) or (piece_held[2] == "BP" and 7-row_clicked == 0):
+                                choice_making = True
+                                
                             for i in range(0, len(possible_moves)):
                                 if move == possible_moves[i:i+4]:
-                                    print("YH")
                                     newBoard.makeMove(possible_moves[i:i+5])
                                     board.move+=1
                             
                 hold_click = False
                 piece_lock = False
                 piece_held = (9, 9, 'nn')
+            if current_state == HOME_SCREEN:
+                if option_1_rect.collidepoint(pygame.mouse.get_pos()) or option_2_rect.collidepoint(pygame.mouse.get_pos()):
+                    current_state = GAME_SCREEN
     screen.fill(BACKGROUND_COLOUR_1)
     if current_state == HOME_SCREEN:
 
-        """
+        
         ### Background Decoration
-        SQUARE_WIDTH = int(current_size[0] / 6) 
         count = 0
         for y in range(0, int(current_size[1]), SQUARE_WIDTH):
-            for x in range(0, int(current_size[0]), SQUARE_WIDTH):
-                if count % 2 == 0:
-                    colour = BACKGROUND_COLOUR_2
-                else:
-                    colour = BACKGROUND_COLOUR_3
-                pygame.draw.rect(screen, colour, (x, y, SQUARE_WIDTH, SQUARE_WIDTH), border_radius=40)
-                count+=1
-        """
+                for x in range(0, int(current_size[0]//4), SQUARE_WIDTH):
+                    if count % 2 == 0:
+                        colour = BACKGROUND_COLOUR_2
+                    else:
+                        colour = BACKGROUND_COLOUR_3
+                    pygame.draw.rect(screen, colour, (x, y, SQUARE_WIDTH, SQUARE_WIDTH))
+                    count+=1
+        count = 0
+        for y in range(0, int(current_size[1]), SQUARE_WIDTH):
+                for x in range(int(current_size[0]), int(current_size[0]//(4)), -SQUARE_WIDTH):
+                    if count % 2 == 0:
+                        colour = BACKGROUND_COLOUR_2
+                    else:
+                        colour = BACKGROUND_COLOUR_3
+                    pygame.draw.rect(screen, colour, (x, y, SQUARE_WIDTH, SQUARE_WIDTH))
+                    count+=1
+
+        if hovering == True:
+            if hover_1 == True:
+                pygame.draw.rect(screen, BLACK, [SQUARE_WIDTH*3, SQUARE_WIDTH*1, SQUARE_WIDTH, SQUARE_WIDTH])
+            if hover_2 == True:
+                pygame.draw.rect(screen, BLACK, [SQUARE_WIDTH*4, SQUARE_WIDTH*2, SQUARE_WIDTH, SQUARE_WIDTH])
+        
         screen.blit(text_1_surface, text_1_rect)
-        screen.blit(text_2_surface, text_2_rect)
+        #screen.blit(text_2_surface, text_2_rect)
         screen.blit(text_3_surface, text_3_rect)
         
         
 
     elif current_state == GAME_SCREEN:
-        board.drawBoard(screen)
-        """
-        if waiting_tbc_verified[-1] != "":
-            if server.verified[-1] == waiting_tbc_verified[-1]:
-                x1, y1 = int(waiting_tbc_verified[-1][0]),int(waiting_tbc_verified[-1][1]) 
-                x2, y2 = int(waiting_tbc_verified[-1][2]),int(waiting_tbc_verified[-1][3])
-                #tmp = deepcopy(board.board[x2][y2])
-                board.board[x2][y2] = waiting_tbc_verified[0]#board.board[x1][y1]
-                board.board[x1][y1] = ""
-                waiting_tbc_verified = [1, ""]
-        """
+        board.draWBoard(screen)
+        
         ### DRAW THE BOARD
         top1x= board.board_x-current_size[0]*0.025
         top1y = current_size[1]*0.025
@@ -411,8 +431,7 @@ while not done:
 
         #Timer
         if int(time.time() - newGame.startTime) > newGame.lastTime:
-            #print(f"Waitingtbc {waiting_tbc_verified}")
-            #print(f"Server.ver {server.verified}")
+
             newGame.updateTimer((1 if board.move % 2 == 0 else 2))
             
             screen_player_one_timer = secondsToTime(newGame.player_one_time)
@@ -455,8 +474,9 @@ while not done:
                                 type_piece = piece[1]
                 except Exception as e:
                     ...
+
+            
     pygame.display.flip()
     clock.tick(FPS)
 
-#t1.join()
 pygame.quit()

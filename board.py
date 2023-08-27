@@ -38,14 +38,14 @@ class Board:
     WhitePlayerMove = True
 
     mailboard = [
-    ['br', 'bn', 'bb', 'bq', 'bk', 'bb', 'bn', 'br'],
-    ['bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'bp'],
+    ['BR', 'BN', 'BB', 'BQ', 'BK', 'BB', 'BN', 'BR'],
+    ['BP', 'BP', 'BP', 'BP', 'BP', 'BP', 'BP', 'BP'],
     ['', ' ', '', '', '', '', '', ''],
     ['', '', '', '', '', '', '', ''],
     ['', '', '', '', '', '', '', ''],
     ['', '', '', '', '', '', '', ''],
-    ['wp', 'wp', 'wp', 'wp', 'wp', 'wp', 'wp', 'wp'],
-    ['wr', 'wn', 'wb', 'wq', 'wk', 'wb', 'wn', 'wr']
+    ['WP', 'WP', 'WP', 'WP', 'WP', 'WP', 'WP', 'WP'],
+    ['WR', 'WN', 'WB', 'WQ', 'WK', 'WB', 'WN', 'WR']
     ]
 
     def __init__(self) -> None:
@@ -72,11 +72,11 @@ class Board:
                 if LSB & RANK_8 == 0:
                     pos_1 = position//8
                     pos_2 = str(position%8)
-                    moves+= ""+ str(pos_1-1) + pos_2 + str(pos_1) + pos_2 + "P"
+                    moves+= str(pos_1-1) + pos_2 + str(pos_1) + pos_2 + "P"
                 else:
                     pos_1 = position%8
                     pos_2 = position%8
-                    moves += "" + pos_1 + pos_2 + "QPP" + pos_1 + pos_2 + "NPP" + pos_1 + pos_2 + "RPP" + pos_1 + pos_2 + "BP"
+                    moves += pos_1 + pos_2 + "QPP" + pos_1 + pos_2 + "NPP" + pos_1 + pos_2 + "RPP" + pos_1 + pos_2 + "BPP"
 
                 ForwardOne = ForwardOne & ~LSB
                 LSB = ForwardOne & -ForwardOne
@@ -89,7 +89,7 @@ class Board:
                 position = LSB_LOOKUP[LSB]
                 pos_1 = position//8
                 pos_2 = str(position%8)
-                moves+= ""+ str(pos_1-2) + pos_2 + str(pos_1) + pos_2 + "P"
+                moves+= str(pos_1-2) + pos_2 + str(pos_1) + pos_2 + "P"
                 ForwardTwo = ForwardTwo & ~LSB
                 LSB = ForwardTwo & -ForwardTwo
 
@@ -103,11 +103,11 @@ class Board:
                 if LSB & RANK_8 == 0:
                     pos_1 = position//8
                     pos_2 = position%8
-                    moves+= ""+ str(pos_1-1) + str(pos_2+1) + str(pos_1) + str(pos_2) + "P"
+                    moves+= str(pos_1-1) + str(pos_2+1) + str(pos_1) + str(pos_2) + "P"
                 else:
                     pos_1 = str(position%8-1)
                     pos_2 = str(position%8)
-                    moves += "" + pos_1 + pos_2 + "QPP" + pos_1 + pos_2 + "NPP" + pos_1 + pos_2 + "RPP" + pos_1 + pos_2 + "BPP"
+                    moves += pos_1 + pos_2 + "QPP" + pos_1 + pos_2 + "NPP" + pos_1 + pos_2 + "RPP" + pos_1 + pos_2 + "BPP"
 
                 CapturesRight = CapturesRight & ~LSB
                 LSB = CapturesRight & -CapturesRight
@@ -121,12 +121,12 @@ class Board:
 
                 if LSB & RANK_8 == 0:
                     pos_1 = position//8
-                    pos_2 = str(position%8+1)
-                    moves+= ""+ str(pos_1-1) + pos_2 + str(pos_1) + pos_2 + "P"
+                    pos_2 = position%8
+                    moves+= str(pos_1-1) + str(pos_2-1) + str(pos_1) + str(pos_2) + "P"
                 else:
                     pos_1 = str(position%8+1)
                     pos_2 = str(position%8)
-                    moves += "" + pos_1 + pos_2 + "QPP" + pos_1 + pos_2 + "NPP" + pos_1 + pos_2 + "RPP" + pos_1 + pos_2 + "BPP"
+                    moves += pos_1 + pos_2 + "QPP" + pos_1 + pos_2 + "NPP" + pos_1 + pos_2 + "RPP" + pos_1 + pos_2 + "BPP"
 
                 CapturesLeft = CapturesLeft & ~LSB
                 LSB = CapturesLeft & -CapturesLeft
@@ -144,9 +144,6 @@ class Board:
             if LSB != 0:
                 position = LSB_LOOKUP[LSB]
                 moves += str(position%8+1) + str(position%8) + "WE"
-
-
-
 
             #------------Knight Moves--------------#
 
@@ -173,7 +170,6 @@ class Board:
         else:
         
 
-            
             PLAYER_PIECES = self.bitboards['BP']
             ENEMY_PIECES = self.bitboards['WP']|self.bitboards['WN']|self.bitboards['WB']|self.bitboards['WR']|self.bitboards['WQ']|self.bitboards['WK']
             self.PlayerToMovePieces = self.bitboards['BP']|self.bitboards['BN']|self.bitboards['BB']|self.bitboards['BR']|self.bitboards['BQ']|self.bitboards['BK']
@@ -190,8 +186,8 @@ class Board:
                     pos_2 = str(position%8)
                     moves+=str(pos_1+1) + pos_2 + str(pos_1) + pos_2 + "P"
                 else:
-                    pos_1 = position%8
-                    pos_2 = position%8
+                    pos_1 = str(position%8)
+                    pos_2 = str(position%8)
                     moves += pos_1 + pos_2 + "QPP" + pos_1 + pos_2 + "NPP" + pos_1 + pos_2 + "RPP" + pos_1 + pos_2 + "BPP"
 
                 ForwardOne = ForwardOne & ~LSB
@@ -219,11 +215,11 @@ class Board:
                 if LSB & RANK_1 == 0:
                     pos_1 = position//8
                     pos_2 = position%8
-                    moves+= ""+ str(pos_1+1) + str(pos_2+1) + str(pos_1) + str(pos_2) + "P"
+                    moves+= str(pos_1+1) + str(pos_2-1) + str(pos_1) + str(pos_2) + "P"
                 else:
                     pos_1 = str(position%8+1)
                     pos_2 = str(position%8)
-                    moves += "" + pos_1 + pos_2 + "QPP" + pos_1 + pos_2 + "NPP" + pos_1 + pos_2 + "RPP" + pos_1 + pos_2 + "BPP"
+                    moves += pos_1 + pos_2 + "QPP" + pos_1 + pos_2 + "NPP" + pos_1 + pos_2 + "RPP" + pos_1 + pos_2 + "BPP"
 
                 CapturesRight = CapturesRight & ~LSB
                 LSB = CapturesRight & -CapturesRight
@@ -237,12 +233,12 @@ class Board:
 
                 if LSB & RANK_1 == 0:
                     pos_1 = position//8
-                    pos_2 = str(position%8+1)
-                    moves+= ""+ str(pos_1+1) + pos_2 + str(pos_1) + pos_2 + "P"
+                    pos_2 = position%8
+                    moves+= str(pos_1+1) + str(pos_2+1) + str(pos_1) + str(pos_2) + "P"
                 else:
                     pos_1 = str(position%8-1)
                     pos_2 = str(position%8)
-                    moves += "" + pos_1 + pos_2 + "QPP" + pos_1 + pos_2 + "NPP" + pos_1 + pos_2 + "RPP" + pos_1 + pos_2 + "BP"
+                    moves += pos_1 + pos_2 + "QPP" + pos_1 + pos_2 + "NPP" + pos_1 + pos_2 + "RPP" + pos_1 + pos_2 + "BPP"
 
                 CapturesLeft = CapturesLeft & ~LSB
                 LSB = CapturesLeft & -CapturesLeft
@@ -293,7 +289,7 @@ class Board:
             LSB_2 = Possible_Moves & -Possible_Moves
             while LSB_2 != 0:
                 position = LSB_LOOKUP[LSB_2]
-                moves+=""+str(pos//8)+str(pos%8)+str(position//8)+str(position%8)+"N"
+                moves += str(pos//8)+str(pos%8)+str(position//8)+str(position%8)+"N"
                 Possible_Moves = Possible_Moves & ~LSB_2
                 LSB_2 = Possible_Moves & -Possible_Moves
             KNIGHTS = KNIGHTS &~ LSB
@@ -318,7 +314,7 @@ class Board:
         LSB = Possible_Moves & -Possible_Moves
         while LSB != 0:
             position = LSB_LOOKUP[LSB]
-            moves +=str(pos//8)+str(pos%8)+str(position//8)+str(position%8)+"K"
+            moves += str(pos//8)+str(pos%8)+str(position//8)+str(position%8)+"K"
             Possible_Moves = Possible_Moves & ~LSB
             LSB = Possible_Moves & -Possible_Moves
         return moves
@@ -332,7 +328,7 @@ class Board:
             print(row)
     
     def makeMove(self, move):
-        if move[3].isnumeric():
+        if move[2].isnumeric():
             x1 = int(move[0])
             y1 = int(move[1])
             x2 = int(move[2])
@@ -343,6 +339,7 @@ class Board:
                 self.mailboard[7-x2][7-y2] = self.mailboard[7-x1][7-y1]
                 self.bitboards[COLOUR+move[4]] = self.bitboards[COLOUR+move[4]] ^ ((0b1<<(x2*8 + y2)) | (0b1<<(x1*8 + y1)))
             self.mailboard[7-x1][7-y1] = ""
+        
             
             """
             match move[4]:
@@ -405,6 +402,7 @@ if __name__ == "__main__":
     print(newBoard.getAllMoves())
     print(f"{int(len(newBoard.getAllMoves())/5)} possible moves")
     newBoard.makeMove(newBoard.getAllMoves()[-5:])
+    print(f"{int(len(newBoard.getAllMoves())/5)} possible moves")
     print(newBoard.mailboard)
 
 

@@ -1,4 +1,4 @@
-Beginning
+Beginning (in Python)
 First 4 moves:
 
 Evaluation at depth 4 without Transposition table took: 1.9062414169311523 seconds
