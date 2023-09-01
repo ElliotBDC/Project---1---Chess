@@ -180,12 +180,13 @@ fullscreen = False
 
 HOME_SCREEN = "HOME_SCREEN"
 GAME_SCREEN = "GAME_SCREEN"
+LOGIN_SCREEN = "LOGIN_SCREEN"
 
-current_state = HOME_SCREEN
+current_state = LOGIN_SCREEN
 
 
 font_name = "freesansbold.ttf"
-font_size = 32
+font_size = 25
 font_color = (255, 255, 255)
 
 
@@ -217,16 +218,26 @@ text_3_rect = text_3_surface.get_rect()
 text_3_rect.center = (SQUARE_WIDTH * 4.5, SQUARE_WIDTH * 2.5)
 ###
 
-text_5 = "Welcome to Chess"
+text_5 = "Chess AI Trainer"
 text_5_surface = title_font.render(text_5, True, WHITE)
 text_5_rect = text_5_surface.get_rect()
 text_5_rect.center = (current_size[0]//2, current_size[1]//7)
 ###
 text_6 = "New? Register here"
-text_6_surface = smaller_font.render(text_6, True, BLACK)
+text_6_surface = smaller_font.render(text_6, True, WHITE)
 text_6_rect = text_6_surface.get_rect()
 text_6_rect.center = (CENTER, current_size[1]*0.6+HEIGHT*2)
 ###
+text_7 = "Username: "
+text_7_surface = font.render(text_7, True, WHITE)
+text_7_rect = text_7_surface.get_rect()
+text_7_rect.center = (CENTER - text_7_rect.width, current_size[1]*0.35)
+###
+text_8 = "Password: "
+text_8_surface = font.render(text_8, True, WHITE)
+text_8_rect = text_8_surface.get_rect()
+text_8_rect.center = (CENTER - text_7_rect.width, current_size[1]*0.55)
+
 screen_player_one_timer = secondsToTime(newGame.player_one_time)
 screen_player_one_timer_text_surface = font.render(screen_player_one_timer, True, WHITE)  # Render the text with black color
 screen_player_one_timer_rect = screen_player_one_timer_text_surface.get_rect()
@@ -249,8 +260,31 @@ hovering = False
 hover_1 = False
 hover_2 = False
 
+
+# Variables to check whether an username or password is being entered. (To check for key presses)
+username_entry = False
+password_entry = False
+
+username_contents = ""
+password_contents = ""
+
 option_1_rect = pygame.Rect(SQUARE_WIDTH*3, SQUARE_WIDTH*1, SQUARE_WIDTH, SQUARE_WIDTH)
 option_2_rect = pygame.Rect(SQUARE_WIDTH*4, SQUARE_WIDTH*2, SQUARE_WIDTH, SQUARE_WIDTH)
+username_3_rect = pygame.Rect(CENTER - 1.5*text_7_rect.width, current_size[1]*0.41, current_size[0]//3.6, current_size[1]*0.08)
+password_4_rect = pygame.Rect(CENTER - 1.5*text_7_rect.width, current_size[1]*0.61, current_size[0]//3.6, current_size[1]*0.08)
+
+###
+username_9_text = ""
+text_9_surface = font.render(username_9_text, True, WHITE)
+text_9_rect = text_9_surface.get_rect()
+text_9_rect.centerx = text_7_rect.left + 10
+text_9_rect.centery = username_3_rect.centery
+###
+password_10_text = ""
+text_10_surface = font.render(password_10_text, True, WHITE)
+text_10_rect = text_10_surface.get_rect()
+text_10_rect.centerx = text_7_rect.left + 10
+text_10_rect.centery = password_4_rect.centery
 
 board = Board()
 board.readjustPieces()
@@ -272,9 +306,33 @@ while not done:
                 hovering = False
                 hover_2 = False
                 hover_1 = False
+            
         if event.type == pygame.QUIT:
             done = True
         elif event.type == pygame.KEYDOWN:
+            ### Dealing with login key entrys
+            print(f"{ord('a')} + {ord('z')} + {ord('A')} + {ord('Z')} + {ord('0')} + {ord('9')} ")
+            if current_state == LOGIN_SCREEN:
+                if username_entry == True:
+                    if 57 >= event.key >= 48 or 90 >= event.key >= 65 or 122 >= event.key >= 97: 
+                        username_contents += event.unicode
+                    elif event.key == pygame.K_BACKSPACE:
+                        username_contents = username_contents[0:len(username_contents)-1]
+                    elif event.key == pygame.K_RETURN:
+                        username_entry = False
+                    username_9_text = username_contents
+                    text_9_surface = font.render(username_9_text, True, WHITE)
+                if password_entry == True:
+                    if 57 >= event.key >= 48 or 90 >= event.key >= 65 or 122 >= event.key >= 97: 
+                        password_contents += event.unicode
+                    elif event.key == pygame.K_BACKSPACE:
+                        password_contents = password_contents[0:len(password_contents)-1]
+                    elif event.key == pygame.K_RETURN:
+                        password_entry = False
+                    password_10_text = '*' * len(password_contents)
+                    text_10_surface = font.render(password_10_text, True, WHITE)
+
+
             if event.key == pygame.K_TAB:
                 done=True
 
@@ -289,11 +347,14 @@ while not done:
                     font_size = 20
                     font = pygame.font.Font(font_name, font_size)
                     text_surface = font.render(text_1, True, WHITE)
-                    
-
+                    text_1_rect.center = (SQUARE_WIDTH * 3.5, SQUARE_WIDTH * 1.5)
+                    text_3_rect.center = (SQUARE_WIDTH * 4.5, SQUARE_WIDTH * 2.5)
 
                     option_1_rect = pygame.Rect(SQUARE_WIDTH*3, SQUARE_WIDTH*1, SQUARE_WIDTH, SQUARE_WIDTH)
                     option_2_rect = pygame.Rect(SQUARE_WIDTH*4, SQUARE_WIDTH*2, SQUARE_WIDTH, SQUARE_WIDTH)
+
+                    username_3_rect = pygame.Rect(CENTER - 1.5*text_7_rect.width, current_size[1]*0.41, current_size[0]//3.6, current_size[1]*0.08)
+                    password_4_rect = pygame.Rect(CENTER - 1.5*text_7_rect.width, current_size[1]*0.61, current_size[0]//3.6, current_size[1]*0.08)
 
                 else:
                     current_size = ((screen_width, screen_height))
@@ -303,11 +364,15 @@ while not done:
                     font_size = 40
                     font = pygame.font.Font(font_name, font_size)
                     text_surface = font.render(text_1, True, WHITE)
-                    #text_1_rect.center = (SQUARE_WIDTH * 3.5, SQUARE_WIDTH * 1.5)
-                    #text_3_rect.center = (SQUARE_WIDTH * 4.5, SQUARE_WIDTH * 2.5)
+                    text_1_rect.center = (SQUARE_WIDTH * 3.5, SQUARE_WIDTH * 1.5)
+                    text_3_rect.center = (SQUARE_WIDTH * 4.5, SQUARE_WIDTH * 2.5)
 
                     option_1_rect = pygame.Rect(SQUARE_WIDTH*3, SQUARE_WIDTH*1, SQUARE_WIDTH, SQUARE_WIDTH)
                     option_2_rect = pygame.Rect(SQUARE_WIDTH*4, SQUARE_WIDTH*2, SQUARE_WIDTH, SQUARE_WIDTH)
+
+                    username_3_rect = pygame.Rect(CENTER - 1.5*text_7_rect.width, current_size[1]*0.41, current_size[0]//3.6, current_size[1]*0.08)
+                    password_4_rect = pygame.Rect(CENTER - 1.5*text_7_rect.width, current_size[1]*0.61, current_size[0]//3.6, current_size[1]*0.08)
+                    
 
                 board.readjustPieces()
             # Resets the board to its original state. NOTE: Should soon aim to integrate into board class
@@ -317,22 +382,34 @@ while not done:
         elif event.type == pygame.MOUSEBUTTONDOWN:
                 #if event.button == 1:
                     #current_state = GAME_SCREEN
-                mouse_pos = pygame.mouse.get_pos()
-                if board.board_x+board.board_width > mouse_pos[0] > board.board_x and board.board_y < mouse_pos[1] < board.board_y+board.board_height:
-                    hold_click = True
-                if choice_making == True:
-                    if flag_ismade == True:
-                        mouse_pos = pygame.mouse.get_pos()
-                        if box3.x < mouse_pos[0] < box3.x+box3.width and box3.y < mouse_pos[1] < box3.y+box3.height:
-                            possible_moves = newBoard.getAllMoves()
-                            xpos_mouse = ((((mouse_pos[0]-box3.x-0.5*board.sizeOfPiece)/board.sizeOfPiece)-0.75) // 1)+1
-                            for i in range(0, len(possible_moves)-5, 5):
-                                if possible_moves[i:i+4][2] == board.promotion_list[int(xpos_mouse)].upper():
-                                    newBoard.makeMove(possible_moves[i:i+5])
-                                    board.move+=1
-                                    break
-                            choice_making = False
-                            flag_ismade = False
+                if current_state == GAME_SCREEN:
+                    mouse_pos = pygame.mouse.get_pos()
+                    if board.board_x+board.board_width > mouse_pos[0] > board.board_x and board.board_y < mouse_pos[1] < board.board_y+board.board_height:
+                        hold_click = True
+                    if choice_making == True:
+                        if flag_ismade == True:
+                            mouse_pos = pygame.mouse.get_pos()
+                            if box3.x < mouse_pos[0] < box3.x+box3.width and box3.y < mouse_pos[1] < box3.y+box3.height:
+                                possible_moves = newBoard.getAllMoves()
+                                xpos_mouse = ((((mouse_pos[0]-box3.x-0.5*board.sizeOfPiece)/board.sizeOfPiece)-0.75) // 1)+1
+                                for i in range(0, len(possible_moves)-5, 5):
+                                    if possible_moves[i:i+4][2] == board.promotion_list[int(xpos_mouse)].upper():
+                                        newBoard.makeMove(possible_moves[i:i+5])
+                                        board.move+=1
+                                        break
+                                choice_making = False
+                                flag_ismade = False
+                elif current_state == LOGIN_SCREEN:
+                    if username_3_rect.collidepoint(pygame.mouse.get_pos()):
+                        username_entry = True
+                        password_entry = False
+                    elif password_4_rect.collidepoint(pygame.mouse.get_pos()):
+                        password_entry = True
+                        username_entry = False
+                    else:
+                        username_entry = False
+                        password_entry = False
+
         elif event.type == pygame.MOUSEBUTTONUP:
             if hold_click == True:
                 if piece_lock == True:
@@ -364,9 +441,57 @@ while not done:
                 if option_1_rect.collidepoint(pygame.mouse.get_pos()) or option_2_rect.collidepoint(pygame.mouse.get_pos()):
                     current_state = GAME_SCREEN
     screen.fill(BACKGROUND_COLOUR_1)
-    if current_state == HOME_SCREEN:
+    if current_state == LOGIN_SCREEN:
+        screen.blit(text_5_surface, text_5_rect)
+        screen.blit(text_7_surface, text_7_rect)
+        screen.blit(text_8_surface, text_8_rect)
+        screen.blit(text_6_surface, text_6_rect)
+        screen.blit(text_9_surface, text_9_rect)
+        screen.blit(text_10_surface, text_10_rect)
 
-        
+        # Username box
+        username_box = pygame.draw.rect(screen, WHITE, [CENTER - 1.5*text_7_rect.width, current_size[1]*0.41, current_size[0]//3.6, current_size[1]*0.08], 3)
+
+        # Password box
+        password_box = pygame.draw.rect(screen, WHITE, [CENTER - 1.5*text_7_rect.width, current_size[1]*0.61, current_size[0]//3.6, current_size[1]*0.08], 3)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    elif current_state == HOME_SCREEN:
+        if hovering == True:
+            screen.fill((0, 0, 0))
+
         ### Background Decoration
         count = 0
         for y in range(0, int(current_size[1]), SQUARE_WIDTH):
@@ -375,7 +500,15 @@ while not done:
                         colour = BACKGROUND_COLOUR_2
                     else:
                         colour = BACKGROUND_COLOUR_3
-                    pygame.draw.rect(screen, colour, (x, y, SQUARE_WIDTH, SQUARE_WIDTH))
+                    if hovering == True:
+                        if hover_2 == True:
+                            print(f"{SQUARE_WIDTH} + {x}")
+                            if y == (SQUARE_WIDTH * 2):
+                                print("HELLO")
+                                pygame.draw.rect(screen, colour, (x, y, SQUARE_WIDTH, SQUARE_WIDTH), border_radius=20)
+
+                    else:
+                        pygame.draw.rect(screen, colour, (x, y, SQUARE_WIDTH, SQUARE_WIDTH))
                     count+=1
         count = 0
         for y in range(0, int(current_size[1]), SQUARE_WIDTH):
@@ -384,18 +517,37 @@ while not done:
                         colour = BACKGROUND_COLOUR_2
                     else:
                         colour = BACKGROUND_COLOUR_3
-                    pygame.draw.rect(screen, colour, (x, y, SQUARE_WIDTH, SQUARE_WIDTH))
+                    if hovering == True:
+                        if hover_1 == True:
+                            print(f"{SQUARE_WIDTH} + {x}")
+                            if fullscreen:
+                                if x == int(current_size[0]) - SQUARE_WIDTH * 5:
+                                    pygame.draw.rect(screen, colour, (x, y, SQUARE_WIDTH, SQUARE_WIDTH), border_radius=20)
+                            else:
+                                if x == int(current_size[0]) - SQUARE_WIDTH * 3:
+                                    pygame.draw.rect(screen, colour, (x, y, SQUARE_WIDTH, SQUARE_WIDTH), border_radius=20)
+                        if hover_2 == True:
+                            if y == SQUARE_WIDTH * 2:
+                                pygame.draw.rect(screen, colour, (x, y, SQUARE_WIDTH, SQUARE_WIDTH), border_radius=20)
+
+                    else:
+                        pygame.draw.rect(screen, colour, (x, y, SQUARE_WIDTH, SQUARE_WIDTH), border_radius=20)
                     count+=1
 
+        #if hovering == True:
+        #    if hover_1 == True:
+        #        pygame.draw.rect(screen, BLACK, [SQUARE_WIDTH*3, SQUARE_WIDTH*1, SQUARE_WIDTH, SQUARE_WIDTH])
+        #    if hover_2 == True:
+        #        pygame.draw.rect(screen, BLACK, [SQUARE_WIDTH*4, SQUARE_WIDTH*2, SQUARE_WIDTH, SQUARE_WIDTH])
         if hovering == True:
             if hover_1 == True:
-                pygame.draw.rect(screen, BLACK, [SQUARE_WIDTH*3, SQUARE_WIDTH*1, SQUARE_WIDTH, SQUARE_WIDTH])
-            if hover_2 == True:
-                pygame.draw.rect(screen, BLACK, [SQUARE_WIDTH*4, SQUARE_WIDTH*2, SQUARE_WIDTH, SQUARE_WIDTH])
-        
-        screen.blit(text_1_surface, text_1_rect)
-        #screen.blit(text_2_surface, text_2_rect)
-        screen.blit(text_3_surface, text_3_rect)
+                screen.blit(text_1_surface, text_1_rect)
+            else:
+                screen.blit(text_3_surface, text_3_rect)
+        else:
+            screen.blit(text_1_surface, text_1_rect)
+            #screen.blit(text_2_surface, text_2_rect)
+            screen.blit(text_3_surface, text_3_rect)
         
         
 
