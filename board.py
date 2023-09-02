@@ -389,7 +389,14 @@ class Board:
             if captured_piece != '':
                 self.bitboards[captured_piece] &= ~(0b1<<(x2*8+y2))
             self.mailboard[7-x2][7-y2] = self.mailboard[7-x1][7-y1]
-            self.bitboards[COLOUR+move[4]] = self.bitboards[COLOUR+move[4]] ^ ((0b1<<(x2*8 + y2)) | (0b1<<(x1*8 + y1)))
+            new_pos = ((0b1<<(x2*8 + y2)) | (0b1<<(x1*8 + y1)))
+
+            # Incremental updates to bitboards
+
+            self.bitboards[COLOUR+move[4]] = self.bitboards[COLOUR+move[4]] ^ new_pos
+            self.bitboards['OCCUPIED'] ^= new_pos
+            self.EMPTY ^= new_pos
+
             self.mailboard[7-x1][7-y1] = ""
 
             """

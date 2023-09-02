@@ -1,6 +1,7 @@
 import pygame
 import time
 import board
+import database
 
 # Declaring colours in binary format
 
@@ -181,6 +182,7 @@ fullscreen = False
 HOME_SCREEN = "HOME_SCREEN"
 GAME_SCREEN = "GAME_SCREEN"
 LOGIN_SCREEN = "LOGIN_SCREEN"
+THANKS_SCREEN = "THANKS_SCREEN"
 
 current_state = LOGIN_SCREEN
 
@@ -237,6 +239,11 @@ text_8 = "Password: "
 text_8_surface = font.render(text_8, True, WHITE)
 text_8_rect = text_8_surface.get_rect()
 text_8_rect.center = (CENTER - text_7_rect.width, current_size[1]*0.55)
+###
+text_11 = "Thanks for registering. Click anywhere to continue."
+text_11_surface = title_font.render(text_11, True, WHITE)
+text_11_rect = text_11_surface.get_rect()
+text_11_rect.center = (current_size[0]//2, current_size[1]//7)
 
 screen_player_one_timer = secondsToTime(newGame.player_one_time)
 screen_player_one_timer_text_surface = font.render(screen_player_one_timer, True, WHITE)  # Render the text with black color
@@ -259,7 +266,7 @@ ai_thinking = False
 hovering = False
 hover_1 = False
 hover_2 = False
-
+registering = False
 
 # Variables to check whether an username or password is being entered. (To check for key presses)
 username_entry = False
@@ -314,21 +321,34 @@ while not done:
             print(f"{ord('a')} + {ord('z')} + {ord('A')} + {ord('Z')} + {ord('0')} + {ord('9')} ")
             if current_state == LOGIN_SCREEN:
                 if username_entry == True:
-                    if 57 >= event.key >= 48 or 90 >= event.key >= 65 or 122 >= event.key >= 97: 
-                        username_contents += event.unicode
-                    elif event.key == pygame.K_BACKSPACE:
-                        username_contents = username_contents[0:len(username_contents)-1]
-                    elif event.key == pygame.K_RETURN:
-                        username_entry = False
-                    username_9_text = username_contents
-                    text_9_surface = font.render(username_9_text, True, WHITE)
+                    if len(username_contents) <= 11:
+                        if 57 >= event.key >= 48 or 90 >= event.key >= 65 or 122 >= event.key >= 97: 
+                            username_contents += event.unicode
+                        elif event.key == pygame.K_BACKSPACE:
+                            username_contents = username_contents[0:len(username_contents)-1]
+                        elif event.key == pygame.K_RETURN:
+                            username_entry = False
+                        username_9_text = username_contents
+                        text_9_surface = font.render(username_9_text, True, WHITE)
                 if password_entry == True:
                     if 57 >= event.key >= 48 or 90 >= event.key >= 65 or 122 >= event.key >= 97: 
                         password_contents += event.unicode
                     elif event.key == pygame.K_BACKSPACE:
                         password_contents = password_contents[0:len(password_contents)-1]
                     elif event.key == pygame.K_RETURN:
-                        password_entry = False
+                        if registering == True:
+                            if database.registerUser(username_contents, password_contents):
+                                current_state = THANKS_SCREEN
+                            else:
+                                text_5 = f"The name {username_contents} is already in use"
+                                text_5_surface = title_font.render(text_5, True, RED)
+                                text_5_rect = text_5_surface.get_rect()
+                                text_5_rect.center = (current_size[0]//2, current_size[1]//7)
+                        else:
+                            if database.checkUserData(username_contents, password_contents):
+                                current_state = HOME_SCREEN
+                            else:
+                                password_entry = False
                     password_10_text = '*' * len(password_contents)
                     text_10_surface = font.render(password_10_text, True, WHITE)
 
@@ -406,9 +426,31 @@ while not done:
                     elif password_4_rect.collidepoint(pygame.mouse.get_pos()):
                         password_entry = True
                         username_entry = False
+                    elif text_6_rect.collidepoint(pygame.mouse.get_pos()):
+                        if registering == False:
+                            registering = True
+                            text_5 = "Please enter your details below"
+                            text_5_surface = title_font.render(text_5, True, WHITE)
+                            text_5_rect = text_5_surface.get_rect()
+                            text_5_rect.center = (current_size[0]//2, current_size[1]//7)
+                            text_6 = "Already have an account?"
+                            text_6_surface = smaller_font.render(text_6, True, WHITE)
+                            text_6_rect = text_6_surface.get_rect()
+                            text_6_rect.center = (CENTER, current_size[1]*0.6+HEIGHT*2)
+                        else:
+                            text_6 = "New? Register here"
+                            text_6_surface = smaller_font.render(text_6, True, WHITE)
+                            text_6_rect = text_6_surface.get_rect()
+                            text_6_rect.center = (CENTER, current_size[1]*0.6+HEIGHT*2)
+                            text_5 = "Chess AI Trainer"
+                            text_5_surface = title_font.render(text_5, True, WHITE)
+                            text_5_rect = text_5_surface.get_rect()
+                            text_5_rect.center = (current_size[0]//2, current_size[1]//7)
+                            registering = False
                     else:
                         username_entry = False
                         password_entry = False
+
 
         elif event.type == pygame.MOUSEBUTTONUP:
             if hold_click == True:
@@ -455,7 +497,8 @@ while not done:
         # Password box
         password_box = pygame.draw.rect(screen, WHITE, [CENTER - 1.5*text_7_rect.width, current_size[1]*0.61, current_size[0]//3.6, current_size[1]*0.08], 3)
 
-
+    elif current_state == THANKS_SCREEN:
+        screen.blit(text_11_surface, text_11_rect)
 
 
 
